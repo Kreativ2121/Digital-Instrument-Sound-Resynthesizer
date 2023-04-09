@@ -25,7 +25,7 @@ audiowrite(filetitle,audioData,fs);
 %% Wyplotuj przebieg sygnału z podziałem na kanały
 t = seconds(0:1/fs:(size(audioData,1)-1)/fs);
 
-subplot(3,2,1)
+subplot(3,3,4)
 plot(t,audioData)
 title("Przebieg")
 xlabel("Czas")
@@ -37,7 +37,7 @@ ylim([-1 1])
 %% Wyplotuj obwiednię
 [envMin,envMax,loc] = audioEnvelope(filetitle,NumPoints=2000);
 
-subplot(3,2,3)
+subplot(3,3,1)
 nChans = size(envMin,2);
 envbars = [shiftdim(envMin,-1);
     shiftdim(envMax,-1);
@@ -52,7 +52,7 @@ ylabel("Amplituda")
 xlim("tight")
 ylim([-1 1])
 
-subplot(3,2,5)
+subplot(3,3,7)
 loc = loc./fs;
 plot(loc,envMax,loc,envMin)
 title("Obwiednia 2",Interpreter="none")
@@ -62,7 +62,7 @@ xlim("tight")
 ylim([-1 1])
 
 %% Transformacja Fouriera
-subplot(3,2,2)
+subplot(3,3,2)
 
 L = auInfo.TotalSamples;
 Y = fft(audioData);
@@ -76,7 +76,7 @@ xlabel("f (Hz)")
 ylabel("|P1(f)|")
 
 %% Odwrotna Transformacja Fouriera
-subplot(3,2,4)
+subplot(3,3,5)
 
 Yi = ifft(Y, auInfo.TotalSamples);
 Timei = [];
@@ -91,7 +91,41 @@ ylabel("Amplituda")
 xlim("tight")
 ylim([-1 1])
 
+%% STFT
+subplot(3,3,3)
 
+L = auInfo.TotalSamples;
+Y = stft(audioData);
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+f = fs*(0:(L/2))/L;
+plot(f,P1)
+title("STFT Spektrum")
+xlabel("f (Hz)")
+ylabel("|P1(f)|")
+
+%% ISTFT
+subplot(3,3,6)
+
+Yi = istft(Y, auInfo.TotalSamples);
+Timei = [];
+for c = 1:1:L
+    Timei(c) = c/fs;
+end
+
+% Padding - co by istft zadziałało
+while(length(Timei)>length(Yi))
+    Yi(end+1) = 0;
+end
+
+
+plot(Timei, Yi);
+title("ISTFT Przebieg")
+xlabel("Czas (s)")
+ylabel("Amplituda")
+xlim("tight")
+ylim([-1 1])
 
 
 

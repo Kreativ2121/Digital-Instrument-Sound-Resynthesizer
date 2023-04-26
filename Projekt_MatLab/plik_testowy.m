@@ -1,13 +1,15 @@
 clc;
 clear;
+xLimitation = [duration(0,0,0,0) duration(0,0,1,5)];
+% xLimitation = "tight";
 
 %% Odczytaj plik wave,wygraj go na głośnikach i zapisz wave wyjściowy
 % filetitle = "src/download/CantinaBand3.wav";
 % filetitle = "src/records/kross/stereo/STRINGS_ACC_AMOL.wav";
-filetitle = "src/generated/mono/STRINGS_ACC_AMOL.wav";
+filetitle = "src/generated/mono/sine440.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
-soundsc(audioData,fs)
+% soundsc(audioData,fs)
 audiowrite(filetitle,audioData,fs);
 
 %% Odczytywanie pliku frame-by-frame
@@ -33,7 +35,7 @@ title("Przebieg")
 xlabel("Czas")
 ylabel("Amplituda")
 legend("Kanał 1", "Kanał 2")
-xlim("tight")
+xlim(xLimitation)
 ylim([-1 1])
 
 %% Wyplotuj obwiednię
@@ -51,7 +53,7 @@ plot(tbars,ybars);
 title("Obwiednia",Interpreter="none")
 xlabel("Czas")
 ylabel("Amplituda")
-xlim("tight")
+xlim(xLimitation)
 ylim([-1 1])
 
 subplot(3,3,7)

@@ -2,10 +2,11 @@ clc;
 clear;
 
 %% Odczytaj plik wave,wygraj go na głośnikach i zapisz wave wyjściowy
-filetitle = "src/download/CantinaBand3.wav";
+% filetitle = "src/download/CantinaBand3.wav";
+filetitle = "src/records/KROSS/STRINGS_ACC_AMOL.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
-% soundsc(audioData,fs)
+soundsc(audioData,fs)
 audiowrite(filetitle,audioData,fs);
 
 %% Odczytywanie pliku frame-by-frame

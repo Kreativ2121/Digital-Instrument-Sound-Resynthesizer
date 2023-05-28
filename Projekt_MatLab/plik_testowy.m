@@ -6,7 +6,7 @@ xLimitation = [duration(0,0,0,0) duration(0,0,1,5)];
 %% Odczytaj plik wave,wygraj go na głośnikach i zapisz wave wyjściowy
 % filetitle = "src/download/CantinaBand3.wav";
 % filetitle = "src/records/kross/stereo/STRINGS_ACC_AMOL.wav";
-filetitle = "src/generated/mono/sine440.wav";
+filetitle = "src/generated/mono/square440.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
 % soundsc(audioData,fs)
@@ -35,7 +35,8 @@ title("Przebieg")
 xlabel("Czas")
 ylabel("Amplituda")
 legend("Kanał 1", "Kanał 2")
-xlim(xLimitation)
+% xlim(xLimitation)
+xlim("tight")
 ylim([-1 1])
 
 %% Wyplotuj obwiednię
@@ -53,7 +54,8 @@ plot(tbars,ybars);
 title("Obwiednia",Interpreter="none")
 xlabel("Czas")
 ylabel("Amplituda")
-xlim(xLimitation)
+% xlim(xLimitation)
+xlim("tight")
 ylim([-1 1])
 
 subplot(3,3,7)
@@ -122,6 +124,8 @@ end
 while(length(Timei)>length(Yi))
     Yi(end+1) = 0;
 end
+
+% TODO Dorysować spektrogramy dla STFT
 
 
 plot(Timei, Yi);

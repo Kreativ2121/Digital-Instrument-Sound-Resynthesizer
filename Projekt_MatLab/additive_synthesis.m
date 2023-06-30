@@ -9,15 +9,21 @@ MinPeakDist = 3;
 
 %% Odczytaj plik wave,wygraj go na głośnikach i zapisz wave wyjściowy
 % filetitle = "src/download/CantinaBand3.wav";
-% filetitle = "src/records/kross/stereo/STRINGS_ACC_AMOL.wav";
- filetitle = "src/generated/mono/square440.wav";
+filetitle = "src/records/kross/stereo/STRINGS_ACC_AMOL.wav";
+% filetitle = "src/generated/mono/square440.wav";
 % filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/tri440.wav";
 % filetitle = "src/generated/mono/saw440.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
 % soundsc(audioData,fs)
-audiowrite(filetitle,audioData,fs);
+
+% Zapis pliku wyjściowego (przepisanie pliku)
+% audiowrite(filetitle,audioData,fs);
+
+% Zapisanie do zmiennej tylko nazwy pliku ze ścieżki
+file = strsplit(filetitle,'/');
+file = file(end);
 
 %% Wyplotuj przebieg sygnału z podziałem na kanały
 t = seconds(0:1/fs:(size(audioData,1)-1)/fs);
@@ -74,6 +80,9 @@ xlim([0,0.1])
 title("Zrekonstruowany sygnał")
 xlabel("Czas")
 ylabel("Amplituda")
+
+%zapis do pliku
+audiowrite(strcat("output/",file),signal,fs);
 
 %% Odwrotna Transformacja Fouriera
 % subplot(2,2,3)

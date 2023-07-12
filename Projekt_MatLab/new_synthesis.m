@@ -107,6 +107,72 @@ for i=1:size(FrequencyPeaks,2)
     end
 end
 
+% Obtain frequency bins
+kl = FrequencyRangeLow*size(frequency,1)/fs;
+kh = FrequencyRangeHigh*size(frequency,1)/fs;
+
+% Filtering peaks out of the audible frequency range
+FrequencyPeaksRangeFiltered = [];
+counter = 1;
+for i=1:size(FrequencyPeaksHeightFiltered,2)
+    if(frequency(FrequencyPeaksHeightFiltered(2,i)) >= FrequencyRangeLow && frequency(FrequencyPeaksHeightFiltered(2,i)) <= FrequencyRangeHigh)
+        FrequencyPeaksRangeFiltered(1,counter) = FrequencyPeaksHeightFiltered(1,i);
+        FrequencyPeaksRangeFiltered(2,counter) = FrequencyPeaksHeightFiltered(2,i);
+        FrequencyPeaksRangeFiltered(3,counter) = FrequencyPeaksHeightFiltered(3,i);
+        FrequencyPeaksRangeFiltered(4,counter) = FrequencyPeaksHeightFiltered(4,i);
+        counter = counter+1;
+    end
+end
+
+% Adding a row that will show values relative to max dB in whole sound
+maxdB = max(FrequencyPeaksRangeFiltered(4,:));
+
+counter = 1;
+for i=1:size(FrequencyPeaksRangeFiltered,2)
+    FrequencyPeaksRangeFiltered(5,counter) = FrequencyPeaksHeightFiltered(4,i)-maxdB;
+    counter = counter+1;
+end
+
+% Discard peaks with very low magnitude in general-dB-range
+FrequencyPeaksdBFiltered = [];
+counter = 1;
+for i=1:size(FrequencyPeaksRangeFiltered,2)
+    if(FrequencyPeaksRangeFiltered(4,i) >= AmplitudeRangeLow)
+        FrequencyPeaksdBFiltered(1,counter) = FrequencyPeaksRangeFiltered(1,i);
+        FrequencyPeaksdBFiltered(2,counter) = FrequencyPeaksRangeFiltered(2,i);
+        FrequencyPeaksdBFiltered(3,counter) = FrequencyPeaksRangeFiltered(3,i);
+        FrequencyPeaksdBFiltered(4,counter) = FrequencyPeaksRangeFiltered(4,i);
+        FrequencyPeaksdBFiltered(5,counter) = FrequencyPeaksRangeFiltered(5,i);
+        counter = counter+1;
+    end
+end
+
+% Creating equal loudness curve
+FletcherMundson40LikeLoudnessCurveX = double(.05 + double(4000./frequency));
+FletcherMundson40LikeLoudnessCurveX = FletcherMundson40LikeLoudnessCurveX(ceil(length(FletcherMundson40LikeLoudnessCurveX)/2):end);
+FletcherMundson40LikeLoudnessCurve = FletcherMundson40LikeLoudnessCurveX .* 10.^(-FletcherMundson40LikeLoudnessCurveX);
+% plot(frequency(ceil(length(frequency)/2):end),FletcherMundson40LikeLoudnessCurve)
+
+% Choosing only positive frequency values - necessary?
+FrequencyPeaksPositive = [];
+counter = 1;
+for i=1:size(FrequencyPeaksdBFiltered,2)
+    if(FrequencyPeaksdBFiltered(2,i) >= ceil(length(frequency)/2))
+        FrequencyPeaksPositive(1,counter) = FrequencyPeaksdBFiltered(1,i);
+        FrequencyPeaksPositive(2,counter) = FrequencyPeaksdBFiltered(2,i);
+        FrequencyPeaksPositive(3,counter) = FrequencyPeaksdBFiltered(3,i);
+        FrequencyPeaksPositive(4,counter) = FrequencyPeaksdBFiltered(4,i);
+        FrequencyPeaksPositive(5,counter) = FrequencyPeaksdBFiltered(5,i);
+        counter = counter+1;
+    end
+end
+
+% Applying equal loudness curve on magnitude as a sixth row
+% for i=1:size(FrequencyPeaksRangeFiltered,2)
+%     FrequencyPeaksdBFiltered(5,counter) = FrequencyPeaksRangeFiltered(5,i) - FletcherMundson40LikeLoudnessCurve(i);
+%     counter = counter+1;
+% end
+
 %%STEP 5
 
 %%STEP 6

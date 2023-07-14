@@ -89,9 +89,10 @@ for i=1:size(FrequencyPeaks,2)
 end
 PeakValleys = PeakValleys';
 
-% Assigning Peak Heights
+% Assigning Peak Heights and unique index - usable for peak interpolation
 for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(4,i) = FrequencyPeaks(1,i) - (PeakValleys(1,i) + PeakValleys(2,i))/2; % Peak heights in dB
+    FrequencyPeaks(6,i) = i;
 end
 
 % Filtering Small Peaks
@@ -103,6 +104,7 @@ for i=1:size(FrequencyPeaks,2)
         FrequencyPeaksHeightFiltered(2,counter) = FrequencyPeaks(2,i);
         FrequencyPeaksHeightFiltered(3,counter) = FrequencyPeaks(3,i);
         FrequencyPeaksHeightFiltered(4,counter) = FrequencyPeaks(4,i);
+        FrequencyPeaksHeightFiltered(6,counter) = FrequencyPeaks(6,i);
         counter = counter+1;
     end
 end
@@ -120,6 +122,7 @@ for i=1:size(FrequencyPeaksHeightFiltered,2)
         FrequencyPeaksRangeFiltered(2,counter) = FrequencyPeaksHeightFiltered(2,i);
         FrequencyPeaksRangeFiltered(3,counter) = FrequencyPeaksHeightFiltered(3,i);
         FrequencyPeaksRangeFiltered(4,counter) = FrequencyPeaksHeightFiltered(4,i);
+        FrequencyPeaksRangeFiltered(6,counter) = FrequencyPeaksHeightFiltered(6,i);
         counter = counter+1;
     end
 end
@@ -129,7 +132,16 @@ maxdB = max(FrequencyPeaksRangeFiltered(4,:));
 
 counter = 1;
 for i=1:size(FrequencyPeaksRangeFiltered,2)
-    FrequencyPeaksRangeFiltered(5,counter) = FrequencyPeaksHeightFiltered(4,i)-maxdB;
+    FrequencyPeaksRangeFiltered(5,counter) = FrequencyPeaksRangeFiltered(4,i)-maxdB;
+    counter = counter+1;
+end
+
+% Adding the same row to Frequency Peaks (for Peak Interpolation) - needed?
+% maxdB = max(FrequencyPeaks(4,:));
+
+counter = 1;
+for i=1:size(FrequencyPeaks,2)
+    FrequencyPeaks(5,counter) = FrequencyPeaks(4,i)-maxdB;
     counter = counter+1;
 end
 
@@ -143,6 +155,7 @@ for i=1:size(FrequencyPeaksRangeFiltered,2)
         FrequencyPeaksdBFiltered(3,counter) = FrequencyPeaksRangeFiltered(3,i);
         FrequencyPeaksdBFiltered(4,counter) = FrequencyPeaksRangeFiltered(4,i);
         FrequencyPeaksdBFiltered(5,counter) = FrequencyPeaksRangeFiltered(5,i);
+        FrequencyPeaksdBFiltered(6,counter) = FrequencyPeaksRangeFiltered(6,i);
         counter = counter+1;
     end
 end
@@ -152,6 +165,8 @@ FletcherMundson40LikeLoudnessCurveX = double(.05 + double(4000./frequency));
 FletcherMundson40LikeLoudnessCurveX = FletcherMundson40LikeLoudnessCurveX(ceil(length(FletcherMundson40LikeLoudnessCurveX)/2):end);
 FletcherMundson40LikeLoudnessCurve = FletcherMundson40LikeLoudnessCurveX .* 10.^(-FletcherMundson40LikeLoudnessCurveX);
 % plot(frequency(ceil(length(frequency)/2):end),FletcherMundson40LikeLoudnessCurve)
+FletcherMundson40LikeLoudnessCurveFullX = double(.05 + double(4000./frequency));
+FletcherMundson40LikeLoudnessCurveFull = FletcherMundson40LikeLoudnessCurveFullX .* 10.^(-FletcherMundson40LikeLoudnessCurveFullX);
 
 % Choosing only positive frequency values - necessary?
 FrequencyPeaksPositive = [];
@@ -163,17 +178,57 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
         FrequencyPeaksPositive(3,counter) = FrequencyPeaksdBFiltered(3,i);
         FrequencyPeaksPositive(4,counter) = FrequencyPeaksdBFiltered(4,i);
         FrequencyPeaksPositive(5,counter) = FrequencyPeaksdBFiltered(5,i);
+        FrequencyPeaksPositive(6,counter) = FrequencyPeaksdBFiltered(6,i);
         counter = counter+1;
     end
 end
 
-% Applying equal loudness curve on magnitude as a sixth row
-% for i=1:size(FrequencyPeaksRangeFiltered,2)
-%     FrequencyPeaksdBFiltered(5,counter) = FrequencyPeaksRangeFiltered(5,i) - FletcherMundson40LikeLoudnessCurve(i);
-%     counter = counter+1;
-% end
+% Applying equal loudness curve on magnitude as a fifth row
+for i=1:size(FrequencyPeaksPositive,2)
+    FrequencyPeaksPositive(5,i) = FrequencyPeaksPositive(5,i) - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+end
 
-%%STEP 5
+for i=1:size(FrequencyPeaks,2)
+    FrequencyPeaks(5,i) = FrequencyPeaks(5,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
+end
+
+%%STEP 5 - Peak detection and interpolation - for negative scaled dB magnitude
+Peaks = [];
+counter = 1;
+for i=1:size(FrequencyPeaksPositive,2)
+    Peaks(1,counter) = FrequencyPeaksPositive(1,i);
+    Peaks(2,counter) = FrequencyPeaksPositive(2,i);
+    Peaks(3,counter) = FrequencyPeaksPositive(3,i);
+    Peaks(4,counter) = FrequencyPeaksPositive(4,i);
+    Peaks(5,counter) = FrequencyPeaksPositive(5,i);
+    Peaks(6,counter) = FrequencyPeaksPositive(6,i);
+
+    %%ALPHA
+    if(FrequencyPeaksPositive(2,i)-1 == 0)
+        Peaks(7,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+    else
+        Peaks(7,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i)-1,FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+    end
+
+    %%BETA
+    Peaks(8,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+
+    %%GAMMA
+    if(FrequencyPeaksPositive(2,i)+1 == length(FrequencyPeaksPositive))
+        Peaks(9,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+    else
+        Peaks(9,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i)+1,FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+    end
+
+    %Assign parabola peak location - is it even necessary? - peak location
+    %not given before?
+    Peaks(10,counter) = ((Peaks(7,counter)-Peaks(9,counter))/(Peaks(7,counter)-2*Peaks(8,counter)+Peaks(9,counter)))/2;
+
+    %Assign magnitude peak height
+    Peaks(11,counter) = Peaks(8,counter) - (Peaks(7,counter)-Peaks(9,counter))/4*Peaks(10,counter);
+
+    counter = counter+1;
+end
 
 %%STEP 6
 

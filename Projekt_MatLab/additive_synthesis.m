@@ -11,9 +11,9 @@ MinPeakDist = 3;
 % filetitle = "src/download/CantinaBand3.wav";
 % filetitle = "src/records/kross/stereo/STRINGS_ACC_AMOL.wav";
 % filetitle = "src/generated/mono/square440.wav";
-% filetitle = "src/generated/mono/sine440.wav";
+filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/tri440.wav";
-filetitle = "src/generated/mono/saw440.wav";
+% filetitle = "src/generated/mono/saw440.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
 % soundsc(audioData,fs)

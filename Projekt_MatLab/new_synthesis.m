@@ -32,7 +32,11 @@ subplot(2,1,2)
 % Default Hann128 window
 % stft(audioData,fs)
 % Kaiser window
-stft(audioData,fs,Window=kaiser(100),FFTLength=128,OverlapLength=75)
+beta = 6.0;
+% stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
+stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, FrequencyRange="onesided") %Note
+                                                                                                     %When this argument is set to "onesided", stft outputs the values in the positive 
+                                                                                                     %Nyquist range and does not conserve the total power.
 [magnitude,frequency,time] = stft(audioData,fs);
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
@@ -237,6 +241,16 @@ for i=1:size(FrequencyPeaksPositive,2)
 
     counter = counter+1;
 end
+
+%Normalization scale factor calculation for Kaiser window
+N = size(MagnitudeDecibels,1);
+I0_beta = besseli(0, beta); %TODO Sprawdzić poprawność wyniku.
+W0_partial = besseli(0, beta .* sqrt(1-(2.*MagnitudeDecibels(:,1)./(N-1)-1)))./I0_beta;
+W0 = sum(W0_partial);
+alpha = double(2/W0);
+
+% Normalized amplitude
+N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu skala jest -70-0?
 
 %%STEP 6
 

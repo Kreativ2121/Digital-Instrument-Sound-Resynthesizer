@@ -4,6 +4,7 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 
 %% Read Wave File
 filetitle = "src/generated/mono/square2000.wav";
+% filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
 
@@ -28,7 +29,10 @@ ylim([-1 1])
 subplot(2,1,2)
 
 %%STEP 1
-stft(audioData,fs)
+% Default Hann128 window
+% stft(audioData,fs)
+% Kaiser window
+stft(audioData,fs,Window=kaiser(100),FFTLength=128,OverlapLength=75)
 [magnitude,frequency,time] = stft(audioData,fs);
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
@@ -128,6 +132,7 @@ for i=1:size(FrequencyPeaksHeightFiltered,2)
 end
 
 % Adding a row that will show values relative to max dB in whole sound
+%% TODO SPRAWDZIĆ CZY ARBITRALNIE NIE PRZYJMUJE SIĘ MAXDB?
 maxdB = max(FrequencyPeaksRangeFiltered(4,:));
 
 counter = 1;
@@ -226,6 +231,9 @@ for i=1:size(FrequencyPeaksPositive,2)
 
     %Assign magnitude peak height
     Peaks(11,counter) = Peaks(8,counter) - (Peaks(7,counter)-Peaks(9,counter))/4*Peaks(10,counter);
+
+    %Assign True Peak Location (in bins)
+    Peaks(12,counter) = Peaks(2,counter) + Peaks(10,counter);
 
     counter = counter+1;
 end

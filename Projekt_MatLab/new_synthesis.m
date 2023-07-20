@@ -214,19 +214,19 @@ for i=1:size(FrequencyPeaksPositive,2)
 
     %%ALPHA
     if(FrequencyPeaksPositive(2,i)-1 == 0)
-        Peaks(7,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+        Peaks(7,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
     else
-        Peaks(7,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i)-1,FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+        Peaks(7,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i)-1,FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
     end
 
     %%BETA
-    Peaks(8,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+    Peaks(8,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
 
     %%GAMMA
     if(FrequencyPeaksPositive(2,i)+1 == length(FrequencyPeaksPositive))
-        Peaks(9,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+        Peaks(9,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
     else
-        Peaks(9,counter) = MagnitudeDecibels(FrequencyPeaksPositive(2,i)+1,FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+        Peaks(9,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i)+1,FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
     end
 
     %Assign parabola peak location - is it even necessary? - peak location
@@ -237,7 +237,7 @@ for i=1:size(FrequencyPeaksPositive,2)
     Peaks(11,counter) = Peaks(8,counter) - (Peaks(7,counter)-Peaks(9,counter))/4*Peaks(10,counter);
 
     %Assign True Peak Location (in bins)
-    Peaks(12,counter) = Peaks(2,counter) + Peaks(10,counter);
+    Peaks(12,counter) = frequency(Peaks(2,counter)) + Peaks(10,counter);
 
     counter = counter+1;
 end
@@ -263,6 +263,12 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
 
 
 %% NOTES
+% plot(frequency(64:end),MagnitudeDecibels(64:end,1))
+% hold on
+% plot(Peaks(12,1:4),Peaks(11,1:4))
+
+
+% plot(frequency(64:end),MagnitudeDecibels(64:end,1))
 
 % Bez argumentów - wyświetla wykres
 % stft(audioData,fs,"Window",gausswin(size(audioData,1)/500))

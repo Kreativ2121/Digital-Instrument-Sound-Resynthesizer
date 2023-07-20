@@ -10,10 +10,10 @@ MinPeakDist = 1;
 %% Odczytaj plik wave,wygraj go na głośnikach i zapisz wave wyjściowy
 % filetitle = "src/download/CantinaBand3.wav";
 % filetitle = "src/records/kross/stereo/STRINGS_ACC_AMOL.wav";
-filetitle = "src/generated/mono/square2000.wav";
+% filetitle = "src/generated/mono/square2000.wav";
 % filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/tri440.wav";
-% filetitle = "src/generated/mono/saw440.wav";
+filetitle = "src/generated/mono/saw440.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
 % soundsc(audioData,fs)

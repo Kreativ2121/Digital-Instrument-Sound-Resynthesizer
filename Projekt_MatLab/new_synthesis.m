@@ -28,7 +28,7 @@ ylim([-1 1])
 %% ALGORITHM
 subplot(2,1,2)
 
-%%STEP 1
+%% STEP 1
 % Default Hann128 window
 % stft(audioData,fs)
 % Kaiser window
@@ -40,14 +40,14 @@ stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, Fr
 [magnitude,frequency,time] = stft(audioData,fs);
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
-%%STEP 2
+%% STEP 2
 Ray = abs(magnitude);
 PointAmplitude = deg2rad(magnitude);
 
-%%STEP 3
+%% STEP 3
 MagnitudeDecibels = 20*log10(Ray);
 
-%%STEP 4
+%% STEP 4
 MinimumPeakHeight = 15; %in dB
 FrequencyRangeLow = 20; %in hz
 FrequencyRangeHigh = 16000; %in hz
@@ -136,7 +136,7 @@ for i=1:size(FrequencyPeaksHeightFiltered,2)
 end
 
 % Adding a row that will show values relative to max dB in whole sound
-%% TODO SPRAWDZIĆ CZY ARBITRALNIE NIE PRZYJMUJE SIĘ MAXDB?
+%%TODO SPRAWDZIĆ CZY ARBITRALNIE NIE PRZYJMUJE SIĘ MAXDB?
 maxdB = max(FrequencyPeaksRangeFiltered(4,:));
 
 counter = 1;
@@ -201,7 +201,7 @@ for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(5,i) = FrequencyPeaks(5,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
 end
 
-%%STEP 5 - Peak detection and interpolation - for negative scaled dB magnitude
+%% STEP 5 - Peak detection and interpolation - for negative scaled dB magnitude
 Peaks = [];
 counter = 1;
 for i=1:size(FrequencyPeaksPositive,2)
@@ -242,7 +242,7 @@ for i=1:size(FrequencyPeaksPositive,2)
     counter = counter+1;
 end
 
-%Normalization scale factor calculation for Kaiser window
+% Normalization scale factor calculation for Kaiser window
 N = size(MagnitudeDecibels,1);
 I0_beta = besseli(0, beta); %TODO Sprawdzić poprawność wyniku.
 W0_partial = besseli(0, beta .* sqrt(1-(2.*MagnitudeDecibels(:,1)./(N-1)-1)))./I0_beta;
@@ -251,8 +251,68 @@ alpha = double(2/W0);
 
 % Normalized amplitude
 N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu skala jest -70-0?
+                             %Póki co te dane odrzucone - są stanowczo za
+                             %małe wartości.
 
-%%STEP 6
+%% STEP 6
+MaximumPeakDeviation = 5;
+
+PeaksMod = [];
+PeaksMod(1,:) = Peaks(2,:);
+PeaksMod(2,:) = Peaks(3,:);
+PeaksMod(3,:) = Peaks(11,:);
+PeaksMod(4,:) = Peaks(12,:);
+PeaksMod(5,:) = 0; % 0-unmatched 1-matched
+
+Trajectories = [];
+FirstPeaksLoc = find(PeaksMod(2,:) == 1);
+counter = 1;
+for i=1:length(FirstPeaksLoc)
+    Trajectories(1,counter) = PeaksMod(1,FirstPeaksLoc(i));
+    Trajectories(2,counter) = PeaksMod(2,FirstPeaksLoc(i));
+    Trajectories(3,counter) = PeaksMod(3,FirstPeaksLoc(i));
+    Trajectories(4,counter) = PeaksMod(4,FirstPeaksLoc(i));
+    PeaksMod(5,i) = 1;
+    counter = counter + 1;
+end
+
+for i=2:max(PeaksMod(2,:))
+    PeaksLoc = find(PeaksMod(2,:) == i);
+    
+    NewPeaks = [];
+    counter_in = 1;
+    for peak=PeaksLoc
+        % Adding peaks from next time window to variable
+        NewPeaks(1, counter_in) = peak;
+        NewPeaks(2, counter_in) = PeaksMod(1,peak);
+        NewPeaks(3, counter_in) = PeaksMod(2,peak);
+        NewPeaks(4, counter_in) = PeaksMod(3,peak);
+        NewPeaks(5, counter_in) = PeaksMod(4,peak);
+        PeaksMod(5, peak) = 1; % Mark as used.
+
+        % Measuring distance from all previous peaks
+        PeakLocCounter = 1;
+        for j=6:6+length(PeaksLoc)-1
+            NewPeaks(j, counter_in)=abs(PeaksMod(3,peak)-Trajectories(3,PeakLocCounter));
+            PeakLocCounter = PeakLocCounter + 1;
+        end
+
+        % Choosing the smallest distance for every previous Trajectory
+        PeakLocCounter = 1;
+        for j=6:6+length(PeaksLoc)-1
+            [closestVal, closestIndex] = min(NewPeaks(j,:));
+
+            Trajectories(4*(NewPeaks(3, counter_in)-1)+1,PeakLocCounter) = NewPeaks(2,closestIndex);
+            Trajectories(4*(NewPeaks(3, counter_in)-1)+2,PeakLocCounter) = NewPeaks(3,closestIndex);
+            Trajectories(4*(NewPeaks(3, counter_in)-1)+3,PeakLocCounter) = NewPeaks(4,closestIndex);
+            Trajectories(4*(NewPeaks(3, counter_in)-1)+4,PeakLocCounter) = NewPeaks(5,closestIndex);
+            PeakLocCounter = PeakLocCounter + 1;
+        end
+
+
+        counter_in = counter_in + 1;
+    end
+end
 
 %%STEP 7
 

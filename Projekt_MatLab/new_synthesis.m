@@ -280,7 +280,6 @@ for i=2:max(PeaksMod(2,:))
     PeaksLoc = find(PeaksMod(2,:) == i);
     
     NewPeaks = [];
-    AlreadyTaken = [];
     counter_in = 1;
     for peak=PeaksLoc
         % Adding peaks from next time window to variable
@@ -293,7 +292,8 @@ for i=2:max(PeaksMod(2,:))
 
         % Measuring distance from all previous peaks
         PeakLocCounter = 1;
-        for j=6:6+length(Trajectories(4*(i-1),:))-1
+        % for j=6:6+length(Trajectories(4*(i-1),:))-1
+        for j=6:6+length(Trajectories(size(Trajectories,1),:))-1
             NewPeaks(j, counter_in)=abs(PeaksMod(3,peak)-Trajectories(3,PeakLocCounter)); %Czy program poradzi sobie w sytuacji w której pojawią się "dziury"?
             PeakLocCounter = PeakLocCounter + 1;
         end
@@ -303,16 +303,23 @@ for i=2:max(PeaksMod(2,:))
     
     % Choosing the smallest distance for every previous Trajectory
     PeakLocCounter = 1;
+    AlreadyTaken = [];
+    TakenCounter = 1;
     for j=6:6+length(PeaksLoc)-1
         [closestVal, closestIndex] = min(NewPeaks(j,:));
-        % AlreadyTaken(j-5) = PeakLocCounter;
-        % AlreadyTaken = [];
+       
         % TODO wziąć pod uwagę limity i dodać śmierć i poród trajektorii
+        % oraz to czy trajektoria jest już zajęta.
+        
+        if(closestVal < MaximumPeakDeviation && ~any(ismember(AlreadyTaken, closestIndex)))
+            AlreadyTaken(TakenCounter) = closestIndex;
+            TakenCounter = TakenCounter + 1;
 
-        Trajectories(4*(NewPeaks(3, closestIndex)-1)+1,PeakLocCounter) = NewPeaks(2,closestIndex);
-        Trajectories(4*(NewPeaks(3, closestIndex)-1)+2,PeakLocCounter) = NewPeaks(3,closestIndex);
-        Trajectories(4*(NewPeaks(3, closestIndex)-1)+3,PeakLocCounter) = NewPeaks(4,closestIndex);
-        Trajectories(4*(NewPeaks(3, closestIndex)-1)+4,PeakLocCounter) = NewPeaks(5,closestIndex);
+            Trajectories(4*(NewPeaks(3, closestIndex)-1)+1,PeakLocCounter) = NewPeaks(2,closestIndex);
+            Trajectories(4*(NewPeaks(3, closestIndex)-1)+2,PeakLocCounter) = NewPeaks(3,closestIndex);
+            Trajectories(4*(NewPeaks(3, closestIndex)-1)+3,PeakLocCounter) = NewPeaks(4,closestIndex);
+            Trajectories(4*(NewPeaks(3, closestIndex)-1)+4,PeakLocCounter) = NewPeaks(5,closestIndex);
+        end
         PeakLocCounter = PeakLocCounter + 1;
     end
 end

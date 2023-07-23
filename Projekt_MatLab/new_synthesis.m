@@ -276,11 +276,14 @@ for i=1:length(FirstPeaksLoc)
     counter = counter + 1;
 end
 
+% Iterate over time frames
 for i=2:max(PeaksMod(2,:))
     PeaksLoc = find(PeaksMod(2,:) == i);
     
     NewPeaks = [];
     counter_in = 1;
+
+    % Iterate over every peak in time frame
     for peak=PeaksLoc
         % Adding peaks from next time window to variable
         NewPeaks(1, counter_in) = peak;
@@ -300,34 +303,113 @@ for i=2:max(PeaksMod(2,:))
 
         counter_in = counter_in + 1;
     end
+
+    % If trajectory was previously killed, continue it with NaN
+    for j = 1:size(Trajectories,2)
+        if(isnan(Trajectories(size(Trajectories,1),j)))
+            Trajectories(size(Trajectories,1)+1,j) = NaN;
+            Trajectories(size(Trajectories,1)+2,j) = NaN;
+            Trajectories(size(Trajectories,1)+3,j) = NaN;
+            Trajectories(size(Trajectories,1)+4,j) = NaN;
+        end
+    end
     
     % Choosing the smallest distance for every previous Trajectory
     PeakLocCounter = 1;
-    AlreadyTaken = [];
+    % AlreadyTaken = [];
     TakenCounter = 1;
-    for j=6:6+length(PeaksLoc)-1
-        [closestVal, closestIndex] = min(NewPeaks(j,:));
-       
-        % TODO wziąć pod uwagę limity i dodać śmierć i poród trajektorii
-        % oraz to czy trajektoria jest już zajęta.
+    
+    condition = false;
+    while condition ~= true
+        closestVal = min(NewPeaks(6:end,1:end),[],"all");
+        [minRow,minCol] = find(NewPeaks(6:end,1:end)==closestVal);
         
-        if(closestVal < MaximumPeakDeviation && ~any(ismember(AlreadyTaken, closestIndex)))
-            AlreadyTaken(TakenCounter) = closestIndex;
-            TakenCounter = TakenCounter + 1;
-
-            Trajectories(4*(NewPeaks(3, closestIndex)-1)+1,PeakLocCounter) = NewPeaks(2,closestIndex);
-            Trajectories(4*(NewPeaks(3, closestIndex)-1)+2,PeakLocCounter) = NewPeaks(3,closestIndex);
-            Trajectories(4*(NewPeaks(3, closestIndex)-1)+3,PeakLocCounter) = NewPeaks(4,closestIndex);
-            Trajectories(4*(NewPeaks(3, closestIndex)-1)+4,PeakLocCounter) = NewPeaks(5,closestIndex);
+        if(closestVal > MaximumPeakDeviation)
+            condition = true;
+            continue;
+        end
+        
+        Trajectories(4*(i-1)+1,minRow) = NewPeaks(2,minCol);
+        Trajectories(4*(i-1)+2,minRow) = NewPeaks(3,minCol);
+        Trajectories(4*(i-1)+3,minRow) = NewPeaks(4,minCol);
+        Trajectories(4*(i-1)+4,minRow) = NewPeaks(5,minCol);
+        % Discard the current peak
+        for j=1:size(NewPeaks,1)
+            NewPeaks(j,minCol) = NaN;
+        end
+        % Discard the trajectory associated with the current peak
+        for j=1:size(NewPeaks,2)
+            NewPeaks(5+minRow,j) = NaN;
         end
         PeakLocCounter = PeakLocCounter + 1;
+
+        % If all trajectories have been set
+        if(all(Trajectories(4*(i-1)+2,:)))
+            condition = true;
+            continue;
+        end
+
+        % If all peaks have been used
+        if(all(all(isnan(NewPeaks(6:end,1:end)))))
+            condition = true;
+            continue;
+        end
     end
+
+    % Kill remaining trajectories
+    for j = 1:size(Trajectories,2)
+        if(Trajectories(size(Trajectories,1)-3,j) == 0)
+            Trajectories(size(Trajectories,1)-3,j) = NaN;
+            Trajectories(size(Trajectories,1)-2,j) = NaN;
+            Trajectories(size(Trajectories,1)-1,j) = NaN;
+            Trajectories(size(Trajectories,1),j) = NaN;
+        end
+    end
+
+    % Create new trajectories from remaining peaks
+    for j = 1:size(NewPeaks,2)
+        if(~isnan(NewPeaks(1,j)))
+            Trajectories(size(Trajectories,1)-3,size(Trajectories,2)+1) = NewPeaks(2,j);
+            Trajectories(size(Trajectories,1)-2,size(Trajectories,2)) = NewPeaks(3,j);
+            Trajectories(size(Trajectories,1)-1,size(Trajectories,2)) = NewPeaks(4,j);
+            Trajectories(size(Trajectories,1),size(Trajectories,2)) = NewPeaks(5,j);
+            NewPeaks(1,j) = NaN;
+            NewPeaks(2,j) = NaN;
+            NewPeaks(3,j) = NaN;
+            NewPeaks(4,j) = NaN;
+            NewPeaks(5,j) = NaN;
+        end
+    end
+
+
+    % Idę po wszystkich trajektoriach (w szerz po NewPeaks) i szukam najbliższej trajektorii.
+    % Jeżeli trajektoria nie była już wykorzystana i odstępstwo od trajektorii
+    % nie przekracza limitu to dopisz do trajektorii pik. (Linia 6 oznacza,
+    % iż do 1 trajektorii najbliższy jest pik X itd.)
+    % (Tu warto dodać, by jeżeli minimum jest wykorzystane
+    % to żeby wykorzystać drugi najbliższy (while od MaximumPeakDeviation?). Można nadpisywać dane w NewPeaks?).
+    % for j=6:6+length(PeaksLoc)-1
+    %     [closestVal, closestIndex] = min(NewPeaks(j,:));
+    % 
+    %     % TODO wziąć pod uwagę limity i dodać śmierć i poród trajektorii
+    %     % oraz to czy trajektoria jest już zajęta.
+    % 
+    %     if(closestVal < MaximumPeakDeviation && ~any(ismember(AlreadyTaken, closestIndex)))
+    %         AlreadyTaken(TakenCounter) = closestIndex;
+    %         TakenCounter = TakenCounter + 1;
+    % 
+    %         Trajectories(4*(NewPeaks(3, closestIndex)-1)+1,PeakLocCounter) = NewPeaks(2,closestIndex);
+    %         Trajectories(4*(NewPeaks(3, closestIndex)-1)+2,PeakLocCounter) = NewPeaks(3,closestIndex);
+    %         Trajectories(4*(NewPeaks(3, closestIndex)-1)+3,PeakLocCounter) = NewPeaks(4,closestIndex);
+    %         Trajectories(4*(NewPeaks(3, closestIndex)-1)+4,PeakLocCounter) = NewPeaks(5,closestIndex);
+    %     end
+    %     PeakLocCounter = PeakLocCounter + 1;
+    % end
 end
 
 %%STEP 7
 
-%%STEP 8 - RESYNTHESIS
-
+%%STEP 8 - RESYNTHES
 
 
 
@@ -355,3 +437,10 @@ end
 % title("Short Time Fourier Transform (STFT)")
 % xlabel("Time (s)")
 % ylabel("Frequency (kHz)")
+
+% % % INNE
+% else
+%     Trajectories(4*(NewPeaks(3, closestIndex)-1)+1,size(Trajectories,2)+1) = NewPeaks(2,closestIndex);
+%     Trajectories(4*(NewPeaks(3, closestIndex)-1)+2,size(Trajectories,2)) = NewPeaks(3,closestIndex);
+%     Trajectories(4*(NewPeaks(3, closestIndex)-1)+3,size(Trajectories,2)) = NewPeaks(4,closestIndex);
+%     Trajectories(4*(NewPeaks(3, closestIndex)-1)+4,size(Trajectories,2)) = NewPeaks(5,closestIndex);

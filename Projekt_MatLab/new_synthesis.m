@@ -297,7 +297,7 @@ for i=2:max(PeaksMod(2,:))
         PeakLocCounter = 1;
         % for j=6:6+length(Trajectories(4*(i-1),:))-1
         for j=6:6+length(Trajectories(size(Trajectories,1),:))-1
-            NewPeaks(j, counter_in)=abs(PeaksMod(3,peak)-Trajectories(3,PeakLocCounter)); %Czy program poradzi sobie w sytuacji w której pojawią się "dziury"?
+            NewPeaks(j, counter_in)=abs(PeaksMod(3,peak)-Trajectories(3+(4*(i-2)),PeakLocCounter)); %Czy program poradzi sobie w sytuacji w której pojawią się "dziury"?
             PeakLocCounter = PeakLocCounter + 1;
         end
 
@@ -308,9 +308,9 @@ for i=2:max(PeaksMod(2,:))
     for j = 1:size(Trajectories,2)
         if(isnan(Trajectories(size(Trajectories,1),j)))
             Trajectories(size(Trajectories,1)+1,j) = NaN;
-            Trajectories(size(Trajectories,1)+2,j) = NaN;
-            Trajectories(size(Trajectories,1)+3,j) = NaN;
-            Trajectories(size(Trajectories,1)+4,j) = NaN;
+            Trajectories(size(Trajectories,1)+1,j) = NaN;
+            Trajectories(size(Trajectories,1)+1,j) = NaN;
+            Trajectories(size(Trajectories,1)+1,j) = NaN;
         end
     end
     
@@ -356,6 +356,8 @@ for i=2:max(PeaksMod(2,:))
         end
     end
 
+    % % % COŚ JEST NIE TAK Z PRZYPISYWANIEM ZABITYCH ALBO NANÓW - DZIWNE
+    % WARTOŚCI OD NTEJ ITERACJI
     % Kill remaining trajectories
     for j = 1:size(Trajectories,2)
         if(Trajectories(size(Trajectories,1)-3,j) == 0)

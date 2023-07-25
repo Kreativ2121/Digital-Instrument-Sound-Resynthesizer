@@ -255,6 +255,7 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
                              %małe wartości.
 
 %% STEP 6
+tic
 MaximumPeakDeviation = 5;
 
 PeaksMod = [];
@@ -408,6 +409,7 @@ for i=2:max(PeaksMod(2,:))
     %     PeakLocCounter = PeakLocCounter + 1;
     % end
 end
+toc2
 
 %%STEP 7
 

@@ -254,6 +254,10 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
                              %Póki co te dane odrzucone - są stanowczo za
                              %małe wartości.
 
+%% TODO SPRAWDZIĆ                             
+Peaks(11,:) = N_Amp;
+
+
 %% STEP 6
 tic
 MaximumPeakDeviation = 10; %Większa granica -> mniej trajektorii
@@ -271,13 +275,20 @@ FirstPeaksLoc = find(PeaksMod(2,:) == 1);
 counter = 1;
 
 % Assigning first time frame to trajectories
-for i=1:length(FirstPeaksLoc)
-    Trajectories(1,counter) = PeaksMod(1,FirstPeaksLoc(i));
-    Trajectories(2,counter) = PeaksMod(2,FirstPeaksLoc(i));
-    Trajectories(3,counter) = PeaksMod(3,FirstPeaksLoc(i));
-    Trajectories(4,counter) = PeaksMod(4,FirstPeaksLoc(i));
-    PeaksMod(5,i) = 1;
-    counter = counter + 1;
+if(~isempty(FirstPeaksLoc))
+    for i=1:length(FirstPeaksLoc)
+        Trajectories(1,counter) = PeaksMod(1,FirstPeaksLoc(i));
+        Trajectories(2,counter) = PeaksMod(2,FirstPeaksLoc(i));
+        Trajectories(3,counter) = PeaksMod(3,FirstPeaksLoc(i));
+        Trajectories(4,counter) = PeaksMod(4,FirstPeaksLoc(i));
+        PeaksMod(5,i) = 1;
+        counter = counter + 1;
+    end
+else
+    Trajectories(1,counter) = NaN;
+    Trajectories(2,counter) = NaN;
+    Trajectories(3,counter) = NaN;
+    Trajectories(4,counter) = NaN;
 end
 
 % Iterate over time frames
@@ -322,6 +333,11 @@ for i=2:max(PeaksMod(2,:))
     TakenCounter = 1;
     
     condition = false;
+
+    if(isempty(PeaksLoc))
+       condition = true; 
+    end
+
     while condition ~= true
         closestVal = min(NewPeaks(6:end,1:end),[],"all");
         [minRow,minCol] = find(NewPeaks(6:end,1:end)==closestVal);
@@ -410,11 +426,71 @@ for i=2:max(PeaksMod(2,:))
 end
 toc
 
-%%STEP 7
+%% STEP 7
+OutputAmp = [];
 
-%%STEP 8 - RESYNTHES
+%Assign first synthesis frame
+
+AmpSum = 0;
+for peak=1:nnz(Trajectories(3,:))
+    AmpSum = AmpSum + Trajectories(3,peak)*cos(Trajectories(4,peak));
+end
+OutputAmp(1) = AmpSum;
+
+%Iterate over trajectories
+for tra = 2:size(Trajectories,1)/4
+    
+    %Iterate over peaks
+    AmpSum = 0;
+    % for peak=1:nnz(Trajectories(tra,:))
+    for peak=1:size(Trajectories,2)
+        %Measure the instantaneous amplitude
+        if(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
+            continue;
+        end
+
+        %%TODO DODAĆ 0 JAKO WARTOŚĆ POPRZEDZAJĄCA PIK I NASTĘPUJĄCA PO NIM
+        % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce
+        % czasowej)
+        if(isnan(Trajectories(((tra-2)*4)+3,peak)))
+            AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/size(Trajectories,1)/(4*tra);
+        end
+
+        % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać
+        % "następną" wartość trajektorii
+        % if(isnan(Trajectories(((tra)*4)+3,peak)))
+        % 
+        % end
+        
+        % TODO SPRAWDZIĆ, czy "size(Trajectories,1)" NA PEWNO JEST POPRAWNY
+        % - POWINNA BYĆ ILOŚĆ TRAJEKTORII W JEDNYM FRAMIE (?)
+        AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/size(Trajectories,1)/(4*tra);
+        AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
+    end
+    OutputAmp(tra) = AmpSum;
+end
 
 
+%Resynthesize the current frame to wanted length
+output = [];
+lengthOfSynthFrame = floor(length(audioData)/(size(Trajectories,1)/4));
+
+frameNr = 1;
+frameCnt = 1;
+% for i = 1:length(audioData)
+for i = 1:(lengthOfSynthFrame-1)*length(OutputAmp)
+    output(i) = OutputAmp(frameNr);
+    % output(i) = floor(OutputAmp(frameNr));
+    frameCnt = frameCnt + 1;
+    if(frameCnt == lengthOfSynthFrame)
+        frameNr = frameNr + 1;
+        frameCnt = 1;
+    end
+end
+% output = uint8(output);
+
+%Zapisanie zresyntezowanego audio do pliku
+audiowrite("output.wav",output,fs);
 
 
 %% NOTES

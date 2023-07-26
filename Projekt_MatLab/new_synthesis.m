@@ -256,7 +256,7 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
 
 %% STEP 6
 tic
-MaximumPeakDeviation = 5;
+MaximumPeakDeviation = 10; %Większa granica -> mniej trajektorii
 
 PeaksMod = [];
 PeaksMod(1,:) = Peaks(2,:);
@@ -265,9 +265,12 @@ PeaksMod(3,:) = Peaks(11,:);
 PeaksMod(4,:) = Peaks(12,:);
 PeaksMod(5,:) = 0; % 0-unmatched 1-matched
 
+% LowestNonNan = 1;
 Trajectories = [];
 FirstPeaksLoc = find(PeaksMod(2,:) == 1);
 counter = 1;
+
+% Assigning first time frame to trajectories
 for i=1:length(FirstPeaksLoc)
     Trajectories(1,counter) = PeaksMod(1,FirstPeaksLoc(i));
     Trajectories(2,counter) = PeaksMod(2,FirstPeaksLoc(i));
@@ -296,9 +299,8 @@ for i=2:max(PeaksMod(2,:))
 
         % Measuring distance from all previous peaks
         PeakLocCounter = 1;
-        % for j=6:6+length(Trajectories(4*(i-1),:))-1
         for j=6:6+length(Trajectories(size(Trajectories,1),:))-1
-            NewPeaks(j, counter_in)=abs(PeaksMod(3,peak)-Trajectories(3+(4*(i-2)),PeakLocCounter)); %Czy program poradzi sobie w sytuacji w której pojawią się "dziury"?
+            NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),PeakLocCounter));
             PeakLocCounter = PeakLocCounter + 1;
         end
 
@@ -317,7 +319,6 @@ for i=2:max(PeaksMod(2,:))
     
     % Choosing the smallest distance for every previous Trajectory
     PeakLocCounter = 1;
-    % AlreadyTaken = [];
     TakenCounter = 1;
     
     condition = false;
@@ -357,8 +358,6 @@ for i=2:max(PeaksMod(2,:))
         end
     end
 
-    % % % COŚ JEST NIE TAK Z PRZYPISYWANIEM ZABITYCH ALBO NANÓW - DZIWNE
-    % WARTOŚCI OD NTEJ ITERACJI
     % Kill remaining trajectories
     for j = 1:size(Trajectories,2)
         if(Trajectories(size(Trajectories,1)-3,j) == 0)
@@ -376,11 +375,11 @@ for i=2:max(PeaksMod(2,:))
             Trajectories(size(Trajectories,1)-2,size(Trajectories,2)) = NewPeaks(3,j);
             Trajectories(size(Trajectories,1)-1,size(Trajectories,2)) = NewPeaks(4,j);
             Trajectories(size(Trajectories,1),size(Trajectories,2)) = NewPeaks(5,j);
-            NewPeaks(1,j) = NaN;
-            NewPeaks(2,j) = NaN;
-            NewPeaks(3,j) = NaN;
-            NewPeaks(4,j) = NaN;
-            NewPeaks(5,j) = NaN;
+            % NewPeaks(1,j) = NaN;
+            % NewPeaks(2,j) = NaN;
+            % NewPeaks(3,j) = NaN;
+            % NewPeaks(4,j) = NaN;
+            % NewPeaks(5,j) = NaN;
         end
     end
 
@@ -409,7 +408,7 @@ for i=2:max(PeaksMod(2,:))
     %     PeakLocCounter = PeakLocCounter + 1;
     % end
 end
-toc2
+toc
 
 %%STEP 7
 

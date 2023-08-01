@@ -255,7 +255,7 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
                              %małe wartości.
 
 %% TODO SPRAWDZIĆ                             
-Peaks(11,:) = N_Amp;
+% Peaks(11,:) = N_Amp;
 
 
 %% STEP 6
@@ -398,31 +398,6 @@ for i=2:max(PeaksMod(2,:))
             % NewPeaks(5,j) = NaN;
         end
     end
-
-
-    % Idę po wszystkich trajektoriach (w szerz po NewPeaks) i szukam najbliższej trajektorii.
-    % Jeżeli trajektoria nie była już wykorzystana i odstępstwo od trajektorii
-    % nie przekracza limitu to dopisz do trajektorii pik. (Linia 6 oznacza,
-    % iż do 1 trajektorii najbliższy jest pik X itd.)
-    % (Tu warto dodać, by jeżeli minimum jest wykorzystane
-    % to żeby wykorzystać drugi najbliższy (while od MaximumPeakDeviation?). Można nadpisywać dane w NewPeaks?).
-    % for j=6:6+length(PeaksLoc)-1
-    %     [closestVal, closestIndex] = min(NewPeaks(j,:));
-    % 
-    %     % TODO wziąć pod uwagę limity i dodać śmierć i poród trajektorii
-    %     % oraz to czy trajektoria jest już zajęta.
-    % 
-    %     if(closestVal < MaximumPeakDeviation && ~any(ismember(AlreadyTaken, closestIndex)))
-    %         AlreadyTaken(TakenCounter) = closestIndex;
-    %         TakenCounter = TakenCounter + 1;
-    % 
-    %         Trajectories(4*(NewPeaks(3, closestIndex)-1)+1,PeakLocCounter) = NewPeaks(2,closestIndex);
-    %         Trajectories(4*(NewPeaks(3, closestIndex)-1)+2,PeakLocCounter) = NewPeaks(3,closestIndex);
-    %         Trajectories(4*(NewPeaks(3, closestIndex)-1)+3,PeakLocCounter) = NewPeaks(4,closestIndex);
-    %         Trajectories(4*(NewPeaks(3, closestIndex)-1)+4,PeakLocCounter) = NewPeaks(5,closestIndex);
-    %     end
-    %     PeakLocCounter = PeakLocCounter + 1;
-    % end
 end
 toc
 
@@ -430,7 +405,6 @@ toc
 OutputAmp = [];
 
 %Assign first synthesis frame
-
 AmpSum = 0;
 for peak=1:nnz(Trajectories(3,:))
     AmpSum = AmpSum + Trajectories(3,peak)*cos(Trajectories(4,peak));
@@ -438,33 +412,45 @@ end
 OutputAmp(1) = AmpSum;
 
 %Iterate over trajectories
+AmpSum = 0;
+AmpSumNext = 0;
 for tra = 2:size(Trajectories,1)/4
-    
-    %Iterate over peaks
-    AmpSum = 0;
+    NonZeroTrajectories = numel(nonzeros(Trajectories(tra*4-3,:)));
+    NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*4-3,:))) - sum(isnan(nonzeros(Trajectories(tra*4-3,:))));
+    if(tra~=size(Trajectories,1)/4)
+        NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories(tra*5-3,:))) - sum(isnan(nonzeros(Trajectories(tra*5-3,:))));
+    end
+
+    %%Iterate over peaks
+    %Add peak sum calculated in the previous step
+    AmpSum = AmpSumNext;
+    AmpSumNext = 0;
     % for peak=1:nnz(Trajectories(tra,:))
-    for peak=1:size(Trajectories,2)
+    for peak=1:NonZeroTrajectories
+
+
         %Measure the instantaneous amplitude
         if(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
             continue;
         end
 
         %%TODO DODAĆ 0 JAKO WARTOŚĆ POPRZEDZAJĄCA PIK I NASTĘPUJĄCA PO NIM
-        % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce
-        % czasowej)
+        % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
+        % SAMPLE INTO THE MTH FRAME - DO POPRAWY
         if(isnan(Trajectories(((tra-2)*4)+3,peak)))
-            AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/size(Trajectories,1)/(4*tra);
+            AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectories/(4*tra);
         end
 
-        % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać
-        % "następną" wartość trajektorii
-        % if(isnan(Trajectories(((tra)*4)+3,peak)))
-        % 
-        % end
-        
-        % TODO SPRAWDZIĆ, czy "size(Trajectories,1)" NA PEWNO JEST POPRAWNY
-        % - POWINNA BYĆ ILOŚĆ TRAJEKTORII W JEDNYM FRAMIE (?)
-        AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/size(Trajectories,1)/(4*tra);
+        % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
+        if(tra~=size(Trajectories,1)/4)
+            if(isnan(Trajectories(((tra)*4)+3,peak)))
+                AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext/(4*tra);
+            end
+        end
+
+        % SPRAWDZIĆ POPRAWNOŚĆ ZMIENNEJ m WE WZORZE. NIE SYNTEZOWAĆ DOPIERO NA NASTĘPNYM ETAPIE?
+        % BŁĄD - AmpInst jest ignorowane. To musi być w else.
+        AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories/(4*tra);
         AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
     end
     OutputAmp(tra) = AmpSum;
@@ -487,9 +473,9 @@ for i = 1:(lengthOfSynthFrame-1)*length(OutputAmp)
         frameCnt = 1;
     end
 end
-% output = uint8(output);
 
 %Zapisanie zresyntezowanego audio do pliku
+% output = uint8(output);
 audiowrite("output.wav",output,fs);
 
 

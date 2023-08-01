@@ -417,41 +417,40 @@ AmpSumNext = 0;
 for tra = 2:size(Trajectories,1)/4
     NonZeroTrajectories = numel(nonzeros(Trajectories(tra*4-3,:)));
     NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*4-3,:))) - sum(isnan(nonzeros(Trajectories(tra*4-3,:))));
-    if(tra~=size(Trajectories,1)/4)
-        NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories(tra*5-3,:))) - sum(isnan(nonzeros(Trajectories(tra*5-3,:))));
+    
+    if(tra<(size(Trajectories,1)/4))
+        NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories((tra+1)*4-3,:))) - sum(isnan(nonzeros(Trajectories((tra+1)*4-3,:))));
     end
 
     %%Iterate over peaks
     %Add peak sum calculated in the previous step
     AmpSum = AmpSumNext;
     AmpSumNext = 0;
+
     % for peak=1:nnz(Trajectories(tra,:))
     for peak=1:NonZeroTrajectories
-
 
         %Measure the instantaneous amplitude
         if(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
             continue;
-        end
 
-        %%TODO DODAĆ 0 JAKO WARTOŚĆ POPRZEDZAJĄCA PIK I NASTĘPUJĄCA PO NIM
         % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
         % SAMPLE INTO THE MTH FRAME - DO POPRAWY
-        if(isnan(Trajectories(((tra-2)*4)+3,peak)))
+        elseif(isnan(Trajectories(((tra-2)*4)+3,peak)))
             AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectories/(4*tra);
-        end
 
         % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
-        if(tra~=size(Trajectories,1)/4)
+        elseif(tra~=size(Trajectories,1)/4)
             if(isnan(Trajectories(((tra)*4)+3,peak)))
                 AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext/(4*tra);
             end
+        else
+            
+            % SPRAWDZIĆ POPRAWNOŚĆ ZMIENNEJ m WE WZORZE. NIE SYNTEZOWAĆ DOPIERO NA NASTĘPNYM ETAPIE?
+            % BŁĄD - AmpInst jest ignorowane. To musi być w else.
+            AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories/(4*tra);
+            AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
         end
-
-        % SPRAWDZIĆ POPRAWNOŚĆ ZMIENNEJ m WE WZORZE. NIE SYNTEZOWAĆ DOPIERO NA NASTĘPNYM ETAPIE?
-        % BŁĄD - AmpInst jest ignorowane. To musi być w else.
-        AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories/(4*tra);
-        AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
     end
     OutputAmp(tra) = AmpSum;
 end

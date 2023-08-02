@@ -403,15 +403,24 @@ toc
 
 %% STEP 7
 OutputAmp = [];
+stepcounter = 1;
 
 %Assign first synthesis frame
-AmpSum = 0;
-for peak=1:nnz(Trajectories(3,:))
-    AmpSum = AmpSum + Trajectories(3,peak)*cos(Trajectories(4,peak));
+NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(1,:))) - sum(isnan(nonzeros(Trajectories(1,:))));
+%Iterate over synth frames in first time frame
+for synframe = 1:floor(length(audioData)/(size(Trajectories,1)/4))
+    AmpSum = 0;
+    % Iterate over peaks in a first synth frame
+    for peak=1:nnz(Trajectories(3,:))
+        AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
+        AmpSum = AmpSum + Trajectories(3,peak)*cos(Trajectories(4,peak));
+    end
+    OutputAmp(stepcounter) = AmpSum;
+    stepcounter = stepcounter + 1;
 end
-OutputAmp(1) = AmpSum;
 
-%Iterate over trajectories
+%Iterate over time frames
+AmpInst = 0;
 AmpSum = 0;
 AmpSumNext = 0;
 NextTrajectory = NaN;
@@ -423,75 +432,77 @@ for tra = 2:size(Trajectories,1)/4
         NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories((tra+1)*4-3,:))) - sum(isnan(nonzeros(Trajectories((tra+1)*4-3,:))));
     end
 
-    %%Iterate over peaks
-    %Add peak sum calculated in the previous step
-    % AmpSum = AmpSumNext;
-    AmpSum = 0;
-
-    % for peak=1:nnz(Trajectories(tra,:))
-    for peak=1:NonZeroTrajectories
-
-        %Add values saved from dying trajectories
-        if(peak == NextTrajectory)
-            %TODO Obecne rozwiązanie zakłada możliwość śmierci jednej
-            %trajektorii w jednym time frame. Zmienić na typ tablicowy i
-            %dodawać/usuwać elementy, by każda trajektoria mogła umrzeć
-            %jednocześnie.
-            NextTrajectory = NaN;
-            AmpSum = AmpSum + AmpSumNext;
-            AmpSumNext = 0;
-
-        %Measure the instantaneous amplitude
-        elseif(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
-            continue;
-
-        % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
-        % SAMPLE INTO THE MTH FRAME - DO POPRAWY
-        elseif(isnan(Trajectories(((tra-2)*4)+3,peak)))
-            AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectories/(4*tra);
-            AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
-
-        % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
-        elseif(tra~=size(Trajectories,1)/4)
-            if(isnan(Trajectories(((tra)*4)+3,peak)))
-                AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext/(4*tra);
-                NextTrajectory = peak;
+    %Iterate over synth frames
+    for synframe = 1:floor(length(audioData)/(size(Trajectories,1)/4))
+        
+        %Add peak sum calculated in the previous step
+        AmpSum = 0;
+    
+        %%Iterate over peaks
+        for peak=1:NonZeroTrajectories
+    
+            %Add values saved from dying trajectories
+            if(peak == NextTrajectory)
+                %TODO Obecne rozwiązanie zakłada możliwość śmierci jednej
+                %trajektorii w jednym time frame. Zmienić na typ tablicowy i
+                %dodawać/usuwać elementy, by każda trajektoria mogła umrzeć
+                %jednocześnie.
+                NextTrajectory = NaN;
+                AmpSum = AmpSum + AmpSumNext;
+                AmpSumNext = 0;
+    
+            %Measure the instantaneous amplitude
+            elseif(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
+                continue;
+    
+            % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
+            elseif(isnan(Trajectories(((tra-2)*4)+3,peak)))
+                AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectories*synframe;
+                AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
+    
+            % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
+            elseif(tra~=size(Trajectories,1)/4)
+                if(isnan(Trajectories(((tra)*4)+3,peak)))
+                    AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe;
+                    NextTrajectory = peak;
+                else
+                    AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories*synframe;
+                    AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
+                end
             else
-                % SPRAWDZIĆ POPRAWNOŚĆ ZMIENNEJ m WE WZORZE. NIE SYNTEZOWAĆ DOPIERO NA NASTĘPNYM ETAPIE?
-                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories/(4*tra);
+                % Zwykła trajektoria - nie rodząca się i nie umierająca
+                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories*synframe;
                 AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
             end
-        else
-
-            % SPRAWDZIĆ POPRAWNOŚĆ ZMIENNEJ m WE WZORZE. NIE SYNTEZOWAĆ DOPIERO NA NASTĘPNYM ETAPIE?
-            AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories/(4*tra);
-            AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
         end
+        OutputAmp(stepcounter) = AmpSum;
+        stepcounter = stepcounter + 1;
     end
-    OutputAmp(tra) = AmpSum;
+
+
 end
 
 
-%Resynthesize the current frame to wanted length
-output = [];
-lengthOfSynthFrame = floor(length(audioData)/(size(Trajectories,1)/4));
-
-frameNr = 1;
-frameCnt = 1;
-% for i = 1:length(audioData)
-for i = 1:(lengthOfSynthFrame-1)*length(OutputAmp)
-    output(i) = OutputAmp(frameNr);
-    % output(i) = floor(OutputAmp(frameNr));
-    frameCnt = frameCnt + 1;
-    if(frameCnt == lengthOfSynthFrame)
-        frameNr = frameNr + 1;
-        frameCnt = 1;
-    end
-end
+%Resynthesize the current frame to wanted length - Not needed as of 2.08.2023
+% output = [];
+% lengthOfSynthFrame = floor(length(audioData)/(size(Trajectories,1)/4));
+% 
+% frameNr = 1;
+% frameCnt = 1;
+% % for i = 1:length(audioData)
+% for i = 1:(lengthOfSynthFrame-1)*length(OutputAmp)
+%     output(i) = OutputAmp(frameNr);
+%     % output(i) = floor(OutputAmp(frameNr));
+%     frameCnt = frameCnt + 1;
+%     if(frameCnt == lengthOfSynthFrame)
+%         frameNr = frameNr + 1;
+%         frameCnt = 1;
+%     end
+% end
 
 %Zapisanie zresyntezowanego audio do pliku
 % output = uint8(output);
-audiowrite("output.wav",output,fs);
+audiowrite("output.wav",OutputAmp,fs);
 
 
 %% NOTES

@@ -422,8 +422,8 @@ end
 %Iterate over time frames
 AmpInst = 0;
 AmpSum = 0;
-AmpSumNext = 0;
-NextTrajectory = NaN;
+AmpSumNext = [];
+NextTrajectory = [];
 for tra = 2:size(Trajectories,1)/4
     NonZeroTrajectories = numel(nonzeros(Trajectories(tra*4-3,:)));
     NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*4-3,:))) - sum(isnan(nonzeros(Trajectories(tra*4-3,:))));
@@ -442,14 +442,10 @@ for tra = 2:size(Trajectories,1)/4
         for peak=1:NonZeroTrajectories
     
             %Add values saved from dying trajectories
-            if(peak == NextTrajectory)
-                %TODO Obecne rozwiązanie zakłada możliwość śmierci jednej
-                %trajektorii w jednym time frame. Zmienić na typ tablicowy i
-                %dodawać/usuwać elementy, by każda trajektoria mogła umrzeć
-                %jednocześnie.
-                NextTrajectory = NaN;
-                AmpSum = AmpSum + AmpSumNext;
-                AmpSumNext = 0;
+            if(~isempty(NextTrajectory) && peak == NextTrajectory(1))
+                AmpSum = AmpSum + AmpSumNext(1);
+                AmpSumNext = AmpSumNext(2:end);
+                NextTrajectory = NextTrajectory(2:end);
     
             %Measure the instantaneous amplitude
             elseif(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
@@ -463,8 +459,9 @@ for tra = 2:size(Trajectories,1)/4
             % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
             elseif(tra~=size(Trajectories,1)/4)
                 if(isnan(Trajectories(((tra)*4)+3,peak)))
-                    AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe;
-                    NextTrajectory = peak;
+                    % AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe;
+                    AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe];
+                    NextTrajectory = [NextTrajectory, peak];
                 else
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories*synframe;
                     AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));

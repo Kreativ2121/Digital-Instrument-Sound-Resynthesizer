@@ -407,6 +407,7 @@ stepcounter = 1;
 
 %Assign first synthesis frame
 NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(1,:))) - sum(isnan(nonzeros(Trajectories(1,:))));
+
 %Iterate over synth frames in first time frame
 for synframe = 1:floor(length(audioData)/(size(Trajectories,1)/4))
     AmpSum = 0;
@@ -433,7 +434,8 @@ for tra = 2:size(Trajectories,1)/4
     end
 
     %Iterate over synth frames
-    for synframe = 1:floor(length(audioData)/(size(Trajectories,1)/4))
+    synframesamount = floor(length(audioData)/(size(Trajectories,1)/4));
+    for synframe = 1:synframesamount
         
         %Add peak sum calculated in the previous step
         AmpSum = 0;
@@ -453,32 +455,30 @@ for tra = 2:size(Trajectories,1)/4
     
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
             elseif(isnan(Trajectories(((tra-2)*4)+3,peak)))
-                AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectories*synframe;
+                AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
                 AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
     
             % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
             elseif(tra~=size(Trajectories,1)/4)
                 if(isnan(Trajectories(((tra)*4)+3,peak)))
                     % AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe;
-                    AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe];
+                    AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
                     NextTrajectory = [NextTrajectory, peak];
                 else
-                    AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories*synframe;
+                    AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                     AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca
-                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/NonZeroNonNaNTrajectories*synframe;
+                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                 AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
             end
         end
         OutputAmp(stepcounter) = AmpSum;
         stepcounter = stepcounter + 1;
     end
-
-
 end
-
+OutputAmp = OutputAmp';
 
 %Resynthesize the current frame to wanted length - Not needed as of 2.08.2023
 % output = [];

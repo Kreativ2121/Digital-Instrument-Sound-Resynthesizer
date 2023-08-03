@@ -445,7 +445,7 @@ for tra = 2:size(Trajectories,1)/4
     
             %Add values saved from dying trajectories
             if(~isempty(NextTrajectory) && peak == NextTrajectory(1))
-                AmpSum = AmpSum + AmpSumNext(1);
+                AmpSum = AmpSum + AmpSumNext(1); % W tej zmiennej wpisana jest już suma ze wzoru, nie liczymy ponownie częstotliwości
                 AmpSumNext = AmpSumNext(2:end);
                 NextTrajectory = NextTrajectory(2:end);
     
@@ -456,7 +456,8 @@ for tra = 2:size(Trajectories,1)/4
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
             elseif(isnan(Trajectories(((tra-2)*4)+3,peak)))
                 AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
-                AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
+                FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
+                AmpSum = AmpSum + AmpInst*cos(FreqInst);
     
             % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
             elseif(tra~=size(Trajectories,1)/4)
@@ -466,16 +467,23 @@ for tra = 2:size(Trajectories,1)/4
                     NextTrajectory = [NextTrajectory, peak];
                 else
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                    AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
+                    FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                    AmpSum = AmpSum + AmpInst*cos(FreqInst);
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                AmpSum = AmpSum + AmpInst*cos(Trajectories(((tra-1)*4)+4,peak));
+                FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                AmpSum = AmpSum + AmpInst*cos(FreqInst);
             end
         end
         OutputAmp(stepcounter) = AmpSum;
         stepcounter = stepcounter + 1;
+
+        % % TODO PRZY KAŻDYM LICZENIU AMPSUM DODAĆ FREQINST, BY WYLICZYĆ
+        % PRAWIDŁOWE WARTOŚCI INTERPOLOWANEJ CZĘSTOTLIWOŚCI - TRAJECTORIES,
+        % WIELOKROTNOŚĆ CZWÓRKI, INTERPOLOWANA POMIĘDZY OBECNĄ A POPRZEDNIĄ
+        % WARTOŚCIĄ
     end
 end
 OutputAmp = OutputAmp';

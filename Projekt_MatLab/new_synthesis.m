@@ -35,14 +35,15 @@ subplot(2,1,2)
 beta = 6.0;
 % stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
 stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, FrequencyRange="onesided") %Note
-                                                                                                     %When this argument is set to "onesided", stft outputs the values in the positive 
-                                                                                                     %Nyquist range and does not conserve the total power.
+                                                                                                         %When this argument is set to "onesided", stft outputs the values in the positive 
+                                                                                                         %Nyquist range and does not conserve the total power.
 [magnitude,frequency,time] = stft(audioData,fs);
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
 %% STEP 2
 Ray = abs(magnitude);
 PointAmplitude = deg2rad(magnitude);
+% W dalszym etapie zmienne te póki co nie są używane
 
 %% STEP 3
 MagnitudeDecibels = 20*log10(Ray);
@@ -254,9 +255,8 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
                              %Póki co te dane odrzucone - są stanowczo za
                              %małe wartości.
 
-%% TODO SPRAWDZIĆ                             
-% Peaks(11,:) = N_Amp;
-
+%% TODO SPRAWDZIĆ - Normalizacja zgodnie z punktem z ostatniego akapitu strony 47                          
+Peaks(11,:) = N_Amp;
 
 %% STEP 6
 tic
@@ -459,19 +459,20 @@ for tra = 2:size(Trajectories,1)/4
                 FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
                 AmpSum = AmpSum + AmpInst*cos(FreqInst);
     
-            % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
             elseif(tra~=size(Trajectories,1)/4)
                 if(isnan(Trajectories(((tra)*4)+3,peak)))
+                    % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
                     % AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe;
-                    AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
+                    AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (0 - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
                     NextTrajectory = [NextTrajectory, peak];
                 else
+                    % Zwykła trajektoria - nie rodząca się i nie umierająca
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                     FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
                     AmpSum = AmpSum + AmpInst*cos(FreqInst);
                 end
             else
-                % Zwykła trajektoria - nie rodząca się i nie umierająca
+                % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu time frame'a
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
                 AmpSum = AmpSum + AmpInst*cos(FreqInst);
@@ -479,11 +480,6 @@ for tra = 2:size(Trajectories,1)/4
         end
         OutputAmp(stepcounter) = AmpSum;
         stepcounter = stepcounter + 1;
-
-        % % TODO PRZY KAŻDYM LICZENIU AMPSUM DODAĆ FREQINST, BY WYLICZYĆ
-        % PRAWIDŁOWE WARTOŚCI INTERPOLOWANEJ CZĘSTOTLIWOŚCI - TRAJECTORIES,
-        % WIELOKROTNOŚĆ CZWÓRKI, INTERPOLOWANA POMIĘDZY OBECNĄ A POPRZEDNIĄ
-        % WARTOŚCIĄ
     end
 end
 OutputAmp = OutputAmp';

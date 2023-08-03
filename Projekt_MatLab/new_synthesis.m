@@ -37,7 +37,7 @@ beta = 6.0;
 stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, FrequencyRange="onesided") %Note
                                                                                                          %When this argument is set to "onesided", stft outputs the values in the positive 
                                                                                                          %Nyquist range and does not conserve the total power.
-[magnitude,frequency,time] = stft(audioData,fs);
+[magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, FrequencyRange="onesided");
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
 %% STEP 2

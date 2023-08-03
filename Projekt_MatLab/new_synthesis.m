@@ -28,7 +28,7 @@ ylim([-1 1])
 %% ALGORITHM
 subplot(2,1,2)
 
-%% STEP 1
+%% STEP 1 - STFT
 % Default Hann128 window
 % stft(audioData,fs)
 % Kaiser window
@@ -40,15 +40,15 @@ stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, Fr
 [magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, FrequencyRange="onesided");
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
-%% STEP 2
+%% STEP 2 - CONVERSION TO POLAR COORDINATES
 Ray = abs(magnitude);
 PointAmplitude = deg2rad(magnitude);
 % W dalszym etapie zmienne te póki co nie są używane
 
-%% STEP 3
+%% STEP 3 - CHANGING MAGNITUDE SCALE TO DECIBELS
 MagnitudeDecibels = 20*log10(Ray);
 
-%% STEP 4
+%% STEP 4 - FINDING PROMINENT SPECTRAL PEAKS
 MinimumPeakHeight = 15; %in dB
 FrequencyRangeLow = 20; %in hz
 FrequencyRangeHigh = 16000; %in hz
@@ -258,7 +258,7 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
 %% TODO SPRAWDZIĆ - Normalizacja zgodnie z punktem z ostatniego akapitu strony 47                          
 Peaks(11,:) = N_Amp;
 
-%% STEP 6
+%% STEP 6 - ASSIGNING PEAKS TO FREQUENCY TRAJECTORIES
 tic
 MaximumPeakDeviation = 10; %Większa granica -> mniej trajektorii
 
@@ -536,3 +536,8 @@ audiowrite("output.wav",OutputAmp,fs);
 %     Trajectories(4*(NewPeaks(3, closestIndex)-1)+2,size(Trajectories,2)) = NewPeaks(3,closestIndex);
 %     Trajectories(4*(NewPeaks(3, closestIndex)-1)+3,size(Trajectories,2)) = NewPeaks(4,closestIndex);
 %     Trajectories(4*(NewPeaks(3, closestIndex)-1)+4,size(Trajectories,2)) = NewPeaks(5,closestIndex);
+
+
+% plot(audioData(1:200))
+% plot(OutputAmp(1:200))
+

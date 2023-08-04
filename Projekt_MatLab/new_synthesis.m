@@ -3,7 +3,10 @@ clear;
 xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 
 %% Read Wave File
-filetitle = "src/generated/mono/square2000.wav";
+% filetitle = "src/generated/mono/square2000.wav";
+% filetitle = "src/generated/mono/square440.wav";
+% filetitle = "src/generated/mono/sine440.wav";
+filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
@@ -86,6 +89,7 @@ for i=1:size(FrequencyPeaks,2)
             break;
         end
     end
+    PeakValleys(i,1) = prevValue;
 
     prevValue = FrequencyPeaks(1,i);
     for j = FrequencyPeaks(2,i):size(MagnitudeDecibels,1)
@@ -96,6 +100,7 @@ for i=1:size(FrequencyPeaks,2)
             break;
         end
     end
+    PeakValleys(i,2) = prevValue;
 end
 PeakValleys = PeakValleys';
 

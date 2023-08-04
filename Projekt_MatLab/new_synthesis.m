@@ -31,6 +31,7 @@ subplot(2,1,2)
 %% STEP 1 - STFT
 % Default Hann128 window
 % stft(audioData,fs)
+
 % Kaiser window
 beta = 6.0;
 % stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
@@ -505,6 +506,10 @@ OutputAmp = OutputAmp';
 % output = uint8(output);
 audiowrite("output.wav",OutputAmp,fs);
 
+% TODO1: Częstotliwości w peaks nie odpowiadają tym, które powinny się tam
+% znaleźć z bezpośredniej analizy wykresu STFT
+% TODO2: Dźwięk wygenerowany z resyntezy to jakiś śmietnik czy ma to prawo
+% bytu? - sprawdzić
 
 %% NOTES
 % plot(frequency(64:end),MagnitudeDecibels(64:end,1))

@@ -232,23 +232,25 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     Peaks(5,counter) = FrequencyPeaksdBFiltered(5,i);
     Peaks(6,counter) = FrequencyPeaksdBFiltered(6,i);
 
+    % % TODO Sprawdzić czy dla alfy bety i gammy nie ujemnej wyniki będą
+    % wychodzić poprawne.
     %%ALPHA
     % TODO CZY ABY NA PEWNO W ALFIE BECIE I GAMMIE MAJĄ BYĆ WARTOŚCI BEZWZGLĘDNE?
     if(FrequencyPeaksdBFiltered(2,i)-1 == 0)
-        Peaks(7,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     else
         % Zakładamy, że valley jest takie samo dla elementów znajdujących się obok pików
-        Peaks(7,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     end
 
     %%BETA
-    Peaks(8,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+    Peaks(8,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
 
     %%GAMMA
     if(FrequencyPeaksdBFiltered(2,i)+1 == length(FrequencyPeaksdBFiltered))
-        Peaks(9,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     else
-        Peaks(9,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     end
 
     %Assign parabola peak location - is it even necessary? - peak location
@@ -278,6 +280,9 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
 
 %% TODO SPRAWDZIĆ - Normalizacja zgodnie z punktem z ostatniego akapitu strony 47                          
 % Peaks(11,:) = N_Amp;
+
+% % TEST - czemu wychodzi tak lepiej?
+% Peaks(11,:) = Peaks(10,:);
 
 %% STEP 6 - ASSIGNING PEAKS TO FREQUENCY TRAJECTORIES
 tic

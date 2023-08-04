@@ -18,6 +18,8 @@ file = file(end);
 %% Plot wavelet
 t = seconds(0:1/fs:(size(audioData,1)-1)/fs);
 
+f1 = figure('Name','STFT','NumberTitle','off');
+f1.Position(1:2) = [50 850];
 subplot(2,1,1)
 plot(t,audioData)
 title("Przebieg")
@@ -181,28 +183,33 @@ FletcherMundson40LikeLoudnessCurveX = double(.05 + double(4000./frequency));
 FletcherMundson40LikeLoudnessCurveX = FletcherMundson40LikeLoudnessCurveX(ceil(length(FletcherMundson40LikeLoudnessCurveX)/2):end);
 FletcherMundson40LikeLoudnessCurve = FletcherMundson40LikeLoudnessCurveX .* 10.^(-FletcherMundson40LikeLoudnessCurveX);
 % plot(frequency(ceil(length(frequency)/2):end),FletcherMundson40LikeLoudnessCurve)
+% plot(frequency,FletcherMundson40LikeLoudnessCurveFull)
+%% ^ TODO OD WARTOŚCI WYŻEJ OBLICZYĆ WARTOŚCI W KROKU 5, WZIĄĆ POD UWAGĘ FREQUENCY!
+
 FletcherMundson40LikeLoudnessCurveFullX = double(.05 + double(4000./frequency));
 FletcherMundson40LikeLoudnessCurveFull = FletcherMundson40LikeLoudnessCurveFullX .* 10.^(-FletcherMundson40LikeLoudnessCurveFullX);
 
-% Choosing only positive frequency values - necessary?
-FrequencyPeaksPositive = [];
-counter = 1;
-for i=1:size(FrequencyPeaksdBFiltered,2)
-    if(FrequencyPeaksdBFiltered(2,i) >= ceil(length(frequency)/2))
-        FrequencyPeaksPositive(1,counter) = FrequencyPeaksdBFiltered(1,i);
-        FrequencyPeaksPositive(2,counter) = FrequencyPeaksdBFiltered(2,i);
-        FrequencyPeaksPositive(3,counter) = FrequencyPeaksdBFiltered(3,i);
-        FrequencyPeaksPositive(4,counter) = FrequencyPeaksdBFiltered(4,i);
-        FrequencyPeaksPositive(5,counter) = FrequencyPeaksdBFiltered(5,i);
-        FrequencyPeaksPositive(6,counter) = FrequencyPeaksdBFiltered(6,i);
-        counter = counter+1;
-    end
-end
+% Choosing only positive frequency values - necessary? - NO! - Po zmianie
+% STFT brane są pod uwagę tylko nieujemne częstotliwości - możemy pominąć
+% ten krok!
+% FrequencyPeaksPositive = [];
+% counter = 1;
+% for i=1:size(FrequencyPeaksdBFiltered,2)
+%     if(FrequencyPeaksdBFiltered(2,i) >= ceil(length(frequency)/2))
+%         FrequencyPeaksPositive(1,counter) = FrequencyPeaksdBFiltered(1,i);
+%         FrequencyPeaksPositive(2,counter) = FrequencyPeaksdBFiltered(2,i);
+%         FrequencyPeaksPositive(3,counter) = FrequencyPeaksdBFiltered(3,i);
+%         FrequencyPeaksPositive(4,counter) = FrequencyPeaksdBFiltered(4,i);
+%         FrequencyPeaksPositive(5,counter) = FrequencyPeaksdBFiltered(5,i);
+%         FrequencyPeaksPositive(6,counter) = FrequencyPeaksdBFiltered(6,i);
+%         counter = counter+1;
+%     end
+% end
 
 % Applying equal loudness curve on magnitude as a fifth row
-for i=1:size(FrequencyPeaksPositive,2)
-    FrequencyPeaksPositive(5,i) = FrequencyPeaksPositive(5,i) - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
-end
+% for i=1:size(FrequencyPeaksPositive,2)
+%     FrequencyPeaksPositive(5,i) = FrequencyPeaksPositive(5,i) - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
+% end
 
 for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(5,i) = FrequencyPeaks(5,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
@@ -211,29 +218,37 @@ end
 %% STEP 5 - Peak detection and interpolation - for negative scaled dB magnitude
 Peaks = [];
 counter = 1;
-for i=1:size(FrequencyPeaksPositive,2)
-    Peaks(1,counter) = FrequencyPeaksPositive(1,i);
-    Peaks(2,counter) = FrequencyPeaksPositive(2,i);
-    Peaks(3,counter) = FrequencyPeaksPositive(3,i);
-    Peaks(4,counter) = FrequencyPeaksPositive(4,i);
-    Peaks(5,counter) = FrequencyPeaksPositive(5,i);
-    Peaks(6,counter) = FrequencyPeaksPositive(6,i);
+for i=1:size(FrequencyPeaksdBFiltered,2)
+    % Peaks(1,counter) = FrequencyPeaksPositive(1,i);
+    % Peaks(2,counter) = FrequencyPeaksPositive(2,i);
+    % Peaks(3,counter) = FrequencyPeaksPositive(3,i);
+    % Peaks(4,counter) = FrequencyPeaksPositive(4,i);
+    % Peaks(5,counter) = FrequencyPeaksPositive(5,i);
+    % Peaks(6,counter) = FrequencyPeaksPositive(6,i);
+    Peaks(1,counter) = FrequencyPeaksdBFiltered(1,i);
+    Peaks(2,counter) = FrequencyPeaksdBFiltered(2,i);
+    Peaks(3,counter) = FrequencyPeaksdBFiltered(3,i);
+    Peaks(4,counter) = FrequencyPeaksdBFiltered(4,i);
+    Peaks(5,counter) = FrequencyPeaksdBFiltered(5,i);
+    Peaks(6,counter) = FrequencyPeaksdBFiltered(6,i);
 
     %%ALPHA
-    if(FrequencyPeaksPositive(2,i)-1 == 0)
-        Peaks(7,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
+    % TODO CZY ABY NA PEWNO W ALFIE BECIE I GAMMIE MAJĄ BYĆ WARTOŚCI BEZWZGLĘDNE?
+    if(FrequencyPeaksdBFiltered(2,i)-1 == 0)
+        Peaks(7,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     else
-        Peaks(7,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i)-1,FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
+        % Zakładamy, że valley jest takie samo dla elementów znajdujących się obok pików
+        Peaks(7,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     end
 
     %%BETA
-    Peaks(8,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
+    Peaks(8,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
 
     %%GAMMA
-    if(FrequencyPeaksPositive(2,i)+1 == length(FrequencyPeaksPositive))
-        Peaks(9,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i),FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
+    if(FrequencyPeaksdBFiltered(2,i)+1 == length(FrequencyPeaksdBFiltered))
+        Peaks(9,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     else
-        Peaks(9,counter) = abs(MagnitudeDecibels(FrequencyPeaksPositive(2,i)+1,FrequencyPeaksPositive(3,i)) - (PeakValleys(1,FrequencyPeaksPositive(6,i)) + PeakValleys(2,FrequencyPeaksPositive(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1));
+        Peaks(9,counter) = abs(MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     end
 
     %Assign parabola peak location - is it even necessary? - peak location
@@ -262,7 +277,7 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
                              %małe wartości.
 
 %% TODO SPRAWDZIĆ - Normalizacja zgodnie z punktem z ostatniego akapitu strony 47                          
-Peaks(11,:) = N_Amp;
+% Peaks(11,:) = N_Amp;
 
 %% STEP 6 - ASSIGNING PEAKS TO FREQUENCY TRAJECTORIES
 tic
@@ -515,6 +530,20 @@ audiowrite("output.wav",OutputAmp,fs);
 % znaleźć z bezpośredniej analizy wykresu STFT
 % TODO2: Dźwięk wygenerowany z resyntezy to jakiś śmietnik czy ma to prawo
 % bytu? - sprawdzić
+
+%COMPARE RESULTS
+f2 = figure('Name','Comparison','NumberTitle','off');
+f2.Position(1:2) = [650 850];
+subplot(2,1,1)
+plot(audioData(1:1000))
+title("Przebieg oryginalny")
+xlabel("Czas (próbki)")
+ylabel("Amplituda")
+subplot(2,1,2)
+plot(OutputAmp(1:1000))
+title("Przebieg zresyntezowany")
+xlabel("Czas (próbki)")
+ylabel("Amplituda")
 
 %% NOTES
 % plot(frequency(64:end),MagnitudeDecibels(64:end,1))

@@ -452,7 +452,7 @@ for synframe = 1:floor(length(audioData)/(size(Trajectories,1)/4))
     % Iterate over peaks in a first synth frame
     for peak=1:nnz(Trajectories(3,:))
         AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
-        AmpSum = AmpSum + AmpInst*cos(Trajectories(4,peak));
+        AmpSum = AmpSum + AmpInst*cos(synframe*Trajectories(4,peak));
     end
     OutputAmp(stepcounter) = AmpSum;
     stepcounter = stepcounter + 1;
@@ -507,13 +507,13 @@ for tra = 2:size(Trajectories,1)/4
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                     FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                    AmpSum = AmpSum + AmpInst*cos(FreqInst);
+                    AmpSum = AmpSum + AmpInst*cos(synframe*FreqInst);
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu time frame'a
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                AmpSum = AmpSum + AmpInst*cos(FreqInst);
+                AmpSum = AmpSum + AmpInst*cos(synframe*FreqInst);
             end
         end
         OutputAmp(stepcounter) = AmpSum;

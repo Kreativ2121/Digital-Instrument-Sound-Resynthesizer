@@ -40,12 +40,13 @@ subplot(2,1,2)
 % stft(audioData,fs)
 
 % Kaiser window
+hopsize = 128;
 beta = 6.0;
 % stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
-stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, FrequencyRange="onesided") %Note
+stft(audioData, fs, Window=kaiser(128,beta), FFTLength=hopsize, OverlapLength=75, FrequencyRange="onesided") %Note
                                                                                                          %When this argument is set to "onesided", stft outputs the values in the positive 
                                                                                                          %Nyquist range and does not conserve the total power.
-[magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75, FrequencyRange="onesided");
+[magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(128,beta), FFTLength=hopsize, OverlapLength=75, FrequencyRange="onesided");
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
 %% STEP 2 - CONVERSION TO POLAR COORDINATES
@@ -293,6 +294,9 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
 %% TODO SPRAWDZIĆ - Normalizacja zgodnie z punktem z ostatniego akapitu strony 47                          
 Peaks(11,:) = N_Amp;
 
+% % TEST - czemu wychodzi tak lepiej?
+% Peaks(11,:) = Peaks(10,:);
+
 %% STEP 6 - ASSIGNING PEAKS TO FREQUENCY TRAJECTORIES
 tic
 MaximumPeakDeviation = 10; %Większa granica -> mniej trajektorii
@@ -437,6 +441,31 @@ end
 toc
 
 %% STEP 7
+
+% % % % % % % % % % % % % % % % % 
+% CREATE FAKE TRAJECTORIES
+
+Trajectories(3,1) = 5;
+% Trajectories(3,2) = 2;
+Trajectories(7,1) = 5;
+% Trajectories(7,2) = 2;
+Trajectories(11,1) = 5;
+% Trajectories(11,2) = 2;
+Trajectories(15,1) = 5;
+% Trajectories(15,2) = 2;
+Trajectories(19,1) = 5;
+% Trajectories(19,2) = 2;
+Trajectories(23,1) = 5;
+% Trajectories(23,2) = 2;
+
+
+
+
+
+
+
+% % % % % % % % % % % % % % % % %
+
 OutputAmp = [];
 stepcounter = 1;
 
@@ -444,12 +473,14 @@ stepcounter = 1;
 NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(1,:))) - sum(isnan(nonzeros(Trajectories(1,:))));
 
 %Iterate over synth frames in first time frame
-for synframe = 1:floor(length(audioData)/(size(Trajectories,1)/4))
+for synframe = 1:hopsize
     AmpSum = 0;
     % Iterate over peaks in a first synth frame
     for peak=1:nnz(Trajectories(3,:))
         AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
-        AmpSum = AmpSum + AmpInst*cos(synframe*Trajectories(4,peak));
+        % FreqInst = Trajectories(tra*4,peak) + (Trajectories(tra*4,peak) - Trajectories(tra*4+4,peak))/NonZeroNonNaNTrajectories*synframe;
+        FreqInst = Trajectories(4,peak);
+        AmpSum = AmpSum + AmpInst*cos(synframe*FreqInst);
     end
     OutputAmp(stepcounter) = AmpSum;
     stepcounter = stepcounter + 1;
@@ -459,58 +490,62 @@ end
 AmpInst = 0;
 AmpSum = 0;
 AmpSumNext = [];
+FreqInstNext = [];
 NextTrajectory = [];
 for tra = 2:size(Trajectories,1)/4
     NonZeroTrajectories = numel(nonzeros(Trajectories(tra*4-3,:)));
     NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*4-3,:))) - sum(isnan(nonzeros(Trajectories(tra*4-3,:))));
-    
+
     if(tra<(size(Trajectories,1)/4))
         NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories((tra+1)*4-3,:))) - sum(isnan(nonzeros(Trajectories((tra+1)*4-3,:))));
     end
 
     %Iterate over synth frames
     synframesamount = floor(length(audioData)/(size(Trajectories,1)/4));
-    for synframe = 1:synframesamount
-        
+    for synframe = 1:hopsize
+
         %Add peak sum calculated in the previous step
         AmpSum = 0;
-    
+
         %%Iterate over peaks
         for peak=1:NonZeroTrajectories
-    
+
             %Add values saved from dying trajectories
             if(~isempty(NextTrajectory) && peak == NextTrajectory(1))
-                AmpSum = AmpSum + AmpSumNext(1); % W tej zmiennej wpisana jest już suma ze wzoru, nie liczymy ponownie częstotliwości
+                FreqInst = FreqInstNext(1);
+                AmpSum = AmpSum + AmpSumNext(1)*cos(synframe * FreqInst); % W tej zmiennej wpisana jest już suma ze wzoru, nie liczymy ponownie częstotliwości
                 AmpSumNext = AmpSumNext(2:end);
+                FreqInstNext = FreqInstNext(2:end);
                 NextTrajectory = NextTrajectory(2:end);
-    
+
             %Measure the instantaneous amplitude
             elseif(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
                 continue;
-    
+
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
             elseif(isnan(Trajectories(((tra-2)*4)+3,peak)))
                 AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
-                AmpSum = AmpSum + AmpInst*cos(FreqInst);
-    
+                AmpSum = AmpSum + AmpInst*cos(synframe * FreqInst);
+
             elseif(tra~=size(Trajectories,1)/4)
                 if(isnan(Trajectories(((tra)*4)+3,peak)))
                     % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
                     % AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe;
                     AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (0 - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
+                    FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - 0)/synframesamount*synframe];
                     NextTrajectory = [NextTrajectory, peak];
                 else
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                     FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                    AmpSum = AmpSum + AmpInst*cos(synframe*FreqInst);
+                    AmpSum = AmpSum + AmpInst*cos(synframe * FreqInst);
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu time frame'a
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                AmpSum = AmpSum + AmpInst*cos(synframe*FreqInst);
+                AmpSum = AmpSum + AmpInst*cos(synframe * FreqInst);
             end
         end
         OutputAmp(stepcounter) = AmpSum;
@@ -518,23 +553,7 @@ for tra = 2:size(Trajectories,1)/4
     end
 end
 OutputAmp = OutputAmp';
-
-%Resynthesize the current frame to wanted length - Not needed as of 2.08.2023
-% output = [];
-% lengthOfSynthFrame = floor(length(audioData)/(size(Trajectories,1)/4));
-% 
-% frameNr = 1;
-% frameCnt = 1;
-% % for i = 1:length(audioData)
-% for i = 1:(lengthOfSynthFrame-1)*length(OutputAmp)
-%     output(i) = OutputAmp(frameNr);
-%     % output(i) = floor(OutputAmp(frameNr));
-%     frameCnt = frameCnt + 1;
-%     if(frameCnt == lengthOfSynthFrame)
-%         frameNr = frameNr + 1;
-%         frameCnt = 1;
-%     end
-% end
+OutputAmp = OutputAmp./8;
 
 %Zapisanie zresyntezowanego audio do pliku
 % output = uint8(output);
@@ -559,38 +578,19 @@ title("Przebieg zresyntezowany")
 xlabel("Czas (próbki)")
 ylabel("Amplituda")
 
-%% NOTES
-% plot(frequency(64:end),MagnitudeDecibels(64:end,1))
-% hold on
-% plot(Peaks(12,1:4),Peaks(11,1:4))
 
 
-% plot(frequency(64:end),MagnitudeDecibels(64:end,1))
-
-% Bez argumentów - wyświetla wykres
-% stft(audioData,fs,"Window",gausswin(size(audioData,1)/500))
-
-%%% Manualne wyświetlenie wykresu 
-% sdb = mag2db(abs(s));
-% mesh(t,f/1000,sdb);
-% 
-% cc = max(sdb(:))+[-60 0];
-% ax = gca;
-% ax.CLim = cc;
-% view(2)
-% colorbar
-% title("Short Time Fourier Transform (STFT)")
-% xlabel("Time (s)")
-% ylabel("Frequency (kHz)")
-
-% % % INNE
-% else
-%     Trajectories(4*(NewPeaks(3, closestIndex)-1)+1,size(Trajectories,2)+1) = NewPeaks(2,closestIndex);
-%     Trajectories(4*(NewPeaks(3, closestIndex)-1)+2,size(Trajectories,2)) = NewPeaks(3,closestIndex);
-%     Trajectories(4*(NewPeaks(3, closestIndex)-1)+3,size(Trajectories,2)) = NewPeaks(4,closestIndex);
-%     Trajectories(4*(NewPeaks(3, closestIndex)-1)+4,size(Trajectories,2)) = NewPeaks(5,closestIndex);
 
 
-% plot(audioData(1:200))
-% plot(OutputAmp(1:200))
+
+
+
+
+
+
+
+
+
+
+
 

@@ -1,5 +1,7 @@
 clc;
 clear;
+close all;
+% warning('on','verbose')
 xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 
 %% Read Wave File
@@ -269,9 +271,19 @@ end
 % Normalization scale factor calculation for Kaiser window
 N = size(MagnitudeDecibels,1);
 I0_beta = besseli(0, beta); %TODO Sprawdzić poprawność wyniku.
-W0_partial = besseli(0, beta .* sqrt(1-(2.*MagnitudeDecibels(:,1)./(N-1)-1)))./I0_beta;
+
+Z = [];
+for i = 1:128
+    Z(i) = i-1;
+end
+
+% % SPRAWDZIĆ ZE WZOREM - CZYM JEST n?
+W0_partial = real(besseli(0, beta .* sqrt(1-(2.*Z./(128-1))))./I0_beta);
 W0 = sum(W0_partial);
-alpha = double(2/W0);
+
+% TODO W0 czy W0_B? - Które rozwiązanie lepsze?
+W0_B = sum(kaiser(128,beta));
+alpha = double(2/W0_B);
 
 % Normalized amplitude
 N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu skala jest -70-0?
@@ -279,7 +291,7 @@ N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu sk
                              %małe wartości.
 
 %% TODO SPRAWDZIĆ - Normalizacja zgodnie z punktem z ostatniego akapitu strony 47                          
-% Peaks(11,:) = N_Amp;
+Peaks(11,:) = N_Amp;
 
 % % TEST - czemu wychodzi tak lepiej?
 % Peaks(11,:) = Peaks(10,:);
@@ -440,7 +452,7 @@ for synframe = 1:floor(length(audioData)/(size(Trajectories,1)/4))
     % Iterate over peaks in a first synth frame
     for peak=1:nnz(Trajectories(3,:))
         AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
-        AmpSum = AmpSum + Trajectories(3,peak)*cos(Trajectories(4,peak));
+        AmpSum = AmpSum + AmpInst*cos(Trajectories(4,peak));
     end
     OutputAmp(stepcounter) = AmpSum;
     stepcounter = stepcounter + 1;

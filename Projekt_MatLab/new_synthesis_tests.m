@@ -474,7 +474,7 @@ stepcounter = 1;
 NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(1,:))) - sum(isnan(nonzeros(Trajectories(1,:))));
 
 %Iterate over synth frames in first time frame
-for synframe = 1:32
+for synframe = 1:hopsize
     AmpSum = 0;
     % Iterate over peaks in a first synth frame
     for peak=1:nnz(Trajectories(3,:))

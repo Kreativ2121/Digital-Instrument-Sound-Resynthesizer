@@ -7,8 +7,8 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 %% Read Wave File
 % filetitle = "src/generated/mono/square2000.wav";
 % filetitle = "src/generated/mono/square440.wav";
-filetitle = "src/generated/mono/sine440.wav";
-% filetitle = "src/generated/mono/sine2000.wav";
+% filetitle = "src/generated/mono/sine440.wav";
+filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
@@ -529,6 +529,13 @@ for tra = 2:size(Trajectories,1)/4
                 FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
 
+                % if(isnan(Trajectories(((tra)*4)+3,peak)))
+                %     % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
+                %     AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (0 - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
+                %     FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - 0)/synframesamount*synframe];
+                %     NextTrajectory = [NextTrajectory, peak];
+                % end
+
             elseif(tra~=size(Trajectories,1)/4)
                 if(isnan(Trajectories(((tra)*4)+3,peak)))
                     % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
@@ -555,6 +562,13 @@ for tra = 2:size(Trajectories,1)/4
 end
 OutputAmp = OutputAmp';
 OutputAmp = OutputAmp./2;
+
+% FAILSAFE
+if(OutputAmp>1)
+   OutputAmp = 1.00;
+elseif(OutputAmp<-1)
+    OutputAmp = -1.00;
+end
 
 %Zapisanie zresyntezowanego audio do pliku
 % output = uint8(output);

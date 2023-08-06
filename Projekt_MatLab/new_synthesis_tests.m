@@ -474,14 +474,14 @@ stepcounter = 1;
 NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(1,:))) - sum(isnan(nonzeros(Trajectories(1,:))));
 
 %Iterate over synth frames in first time frame
-for synframe = 1:hopsize
+for synframe = 1:128
     AmpSum = 0;
     % Iterate over peaks in a first synth frame
     for peak=1:nnz(Trajectories(3,:))
         AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
         % FreqInst = Trajectories(tra*4,peak) + (Trajectories(tra*4,peak) - Trajectories(tra*4+4,peak))/NonZeroNonNaNTrajectories*synframe;
         FreqInst = Trajectories(4,peak);
-        AmpSum = AmpSum + AmpInst*cos(synframe*FreqInst);
+        AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
     end
     OutputAmp(stepcounter) = AmpSum;
     stepcounter = stepcounter + 1;
@@ -527,7 +527,7 @@ for tra = 2:size(Trajectories,1)/4
             elseif(isnan(Trajectories(((tra-2)*4)+3,peak)))
                 AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
-                AmpSum = AmpSum + AmpInst*cos(synframe * FreqInst);
+                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
 
             elseif(tra~=size(Trajectories,1)/4)
                 if(isnan(Trajectories(((tra)*4)+3,peak)))
@@ -540,13 +540,13 @@ for tra = 2:size(Trajectories,1)/4
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                     FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                    AmpSum = AmpSum + AmpInst*cos(synframe * FreqInst);
+                    AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu time frame'a
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                AmpSum = AmpSum + AmpInst*cos(synframe * FreqInst);
+                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
             end
         end
         OutputAmp(stepcounter) = AmpSum;
@@ -554,7 +554,7 @@ for tra = 2:size(Trajectories,1)/4
     end
 end
 OutputAmp = OutputAmp';
-OutputAmp = OutputAmp./8;
+OutputAmp = OutputAmp./2;
 
 %Zapisanie zresyntezowanego audio do pliku
 % output = uint8(output);
@@ -569,13 +569,14 @@ audiowrite("output.wav",OutputAmp,fs);
 f2 = figure('Name','Comparison','NumberTitle','off');
 f2.Position(1:2) = [650 850];
 subplot(2,1,1)
-plot(audioData(1:200))
+plot(audioData(1:2000))
 title("Przebieg oryginalny")
 xlabel("Czas (próbki)")
 ylabel("Amplituda") 
 subplot(2,1,2)
-plot(OutputAmp(1:200))
+plot(OutputAmp(1:2000))
 title("Przebieg zresyntezowany")
+ylim([-1 1])
 xlabel("Czas (próbki)")
 ylabel("Amplituda")
 

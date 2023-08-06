@@ -446,17 +446,17 @@ toc
 % CREATE FAKE TRAJECTORIES
 
 % Trajectories(3,1) = 5;
-Trajectories(3,2) = 0;
+% Trajectories(3,2) = 0;
 % Trajectories(7,1) = 5;
-Trajectories(7,2) = 0;
+% Trajectories(7,2) = 0;
 % Trajectories(11,1) = 5;
-Trajectories(11,2) = 0;
+% Trajectories(11,2) = 0;
 % Trajectories(15,1) = 5;
-Trajectories(15,2) = 0;
+% Trajectories(15,2) = 0;
 % Trajectories(19,1) = 5;
-Trajectories(19,2) = 0;
+% Trajectories(19,2) = 0;
 % Trajectories(23,1) = 5;
-Trajectories(23,2) = 0;
+% Trajectories(23,2) = 0;
 
 % Trajectories(4,1) = 2000.0;
 % Trajectories(8,1) = 2000.00;
@@ -474,7 +474,7 @@ stepcounter = 1;
 NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(1,:))) - sum(isnan(nonzeros(Trajectories(1,:))));
 
 %Iterate over synth frames in first time frame
-for synframe = 1:128
+for synframe = 1:32
     AmpSum = 0;
     % Iterate over peaks in a first synth frame
     for peak=1:nnz(Trajectories(3,:))
@@ -524,7 +524,7 @@ for tra = 2:size(Trajectories,1)/4
                 continue;
 
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
-            elseif(isnan(Trajectories(((tra-2)*4)+3,peak)))
+            elseif((Trajectories(((tra-2)*4)+3,peak)) == 0)
                 AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);

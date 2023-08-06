@@ -7,8 +7,8 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 %% Read Wave File
 % filetitle = "src/generated/mono/square2000.wav";
 % filetitle = "src/generated/mono/square440.wav";
-% filetitle = "src/generated/mono/sine440.wav";
-filetitle = "src/generated/mono/sine2000.wav";
+filetitle = "src/generated/mono/sine440.wav";
+% filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
@@ -40,13 +40,15 @@ subplot(2,1,2)
 % stft(audioData,fs)
 
 % Kaiser window
-hopsize = 128;
+fftlength = 128;
+overlaplength = 96;
+hopsize = fftlength - overlaplength;
 beta = 6.0;
 % stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
-stft(audioData, fs, Window=kaiser(128,beta), FFTLength=hopsize, OverlapLength=75, FrequencyRange="onesided") %Note
+stft(audioData, fs, Window=kaiser(128,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided") %Note
                                                                                                          %When this argument is set to "onesided", stft outputs the values in the positive 
                                                                                                          %Nyquist range and does not conserve the total power.
-[magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(128,beta), FFTLength=hopsize, OverlapLength=75, FrequencyRange="onesided");
+[magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(128,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided");
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
 %% STEP 2 - CONVERSION TO POLAR COORDINATES
@@ -148,7 +150,6 @@ for i=1:size(FrequencyPeaksHeightFiltered,2)
 end
 
 % Adding a row that will show values relative to max dB in whole sound
-%%TODO SPRAWDZIĆ CZY ARBITRALNIE NIE PRZYJMUJE SIĘ MAXDB?
 maxdB = max(FrequencyPeaksRangeFiltered(4,:));
 
 counter = 1;
@@ -238,7 +239,6 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     % % TODO Sprawdzić czy dla alfy bety i gammy nie ujemnej wyniki będą
     % wychodzić poprawne.
     %%ALPHA
-    % TODO CZY ABY NA PEWNO W ALFIE BECIE I GAMMIE MAJĄ BYĆ WARTOŚCI BEZWZGLĘDNE?
     if(FrequencyPeaksdBFiltered(2,i)-1 == 0)
         Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     else
@@ -445,24 +445,25 @@ toc
 % % % % % % % % % % % % % % % % % 
 % CREATE FAKE TRAJECTORIES
 
-Trajectories(3,1) = 5;
-% Trajectories(3,2) = 2;
-Trajectories(7,1) = 5;
-% Trajectories(7,2) = 2;
-Trajectories(11,1) = 5;
-% Trajectories(11,2) = 2;
-Trajectories(15,1) = 5;
-% Trajectories(15,2) = 2;
-Trajectories(19,1) = 5;
-% Trajectories(19,2) = 2;
-Trajectories(23,1) = 5;
-% Trajectories(23,2) = 2;
+% Trajectories(3,1) = 5;
+Trajectories(3,2) = 0;
+% Trajectories(7,1) = 5;
+Trajectories(7,2) = 0;
+% Trajectories(11,1) = 5;
+Trajectories(11,2) = 0;
+% Trajectories(15,1) = 5;
+Trajectories(15,2) = 0;
+% Trajectories(19,1) = 5;
+Trajectories(19,2) = 0;
+% Trajectories(23,1) = 5;
+Trajectories(23,2) = 0;
 
-
-
-
-
-
+% Trajectories(4,1) = 2000.0;
+% Trajectories(8,1) = 2000.00;
+% Trajectories(12,1) = 2000.00;
+% Trajectories(16,1) = 2000.00;
+% Trajectories(20,1) = 2000.00;
+% Trajectories(24,1) = 2000.00;
 
 % % % % % % % % % % % % % % % % %
 
@@ -571,7 +572,7 @@ subplot(2,1,1)
 plot(audioData(1:200))
 title("Przebieg oryginalny")
 xlabel("Czas (próbki)")
-ylabel("Amplituda")
+ylabel("Amplituda") 
 subplot(2,1,2)
 plot(OutputAmp(1:200))
 title("Przebieg zresyntezowany")

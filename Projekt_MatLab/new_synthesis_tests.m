@@ -8,7 +8,8 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/square2000.wav";
 % filetitle = "src/generated/mono/square440.wav";
 % filetitle = "src/generated/mono/sine440.wav";
-filetitle = "src/generated/mono/sine2000.wav";
+filetitle = "src/generated/mono/sine689.wav";
+% filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
@@ -22,7 +23,7 @@ t = seconds(0:1/fs:(size(audioData,1)-1)/fs);
 
 f1 = figure('Name','STFT','NumberTitle','off');
 f1.Position(1:2) = [50 850];
-subplot(2,1,1)
+subplot(2,1,1)'
 plot(t,audioData)
 title("Przebieg")
 xlabel("Czas")
@@ -60,7 +61,7 @@ PointAmplitude = deg2rad(magnitude);
 MagnitudeDecibels = 20*log10(Ray);
 
 %% STEP 4 - FINDING PROMINENT SPECTRAL PEAKS
-MinimumPeakHeight = 15; %in dB
+MinimumPeakHeight = 30; %in dB
 FrequencyRangeLow = 20; %in hz
 FrequencyRangeHigh = 16000; %in hz
 AmplitudeRangeLow = -70; %in dB ?
@@ -132,8 +133,8 @@ for i=1:size(FrequencyPeaks,2)
 end
 
 % Obtain frequency bins
-kl = FrequencyRangeLow*size(frequency,1)/fs;
-kh = FrequencyRangeHigh*size(frequency,1)/fs;
+% kl = FrequencyRangeLow*size(frequency,1)/fs;
+% kh = FrequencyRangeHigh*size(frequency,1)/fs;
 
 % Filtering peaks out of the audible frequency range
 FrequencyPeaksRangeFiltered = [];
@@ -161,6 +162,7 @@ end
 % Adding the same row to Frequency Peaks (for Peak Interpolation) - needed?
 % maxdB = max(FrequencyPeaks(4,:));
 
+% Adding data relative to maxdB (the "negative dB scale")
 counter = 1;
 for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(5,counter) = FrequencyPeaks(4,i)-maxdB;
@@ -561,7 +563,7 @@ for tra = 2:size(Trajectories,1)/4
     end
 end
 OutputAmp = OutputAmp';
-OutputAmp = OutputAmp./2;
+% OutputAmp = OutputAmp./2;
 
 % FAILSAFE
 if(OutputAmp>1)

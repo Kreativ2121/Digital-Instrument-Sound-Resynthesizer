@@ -7,8 +7,10 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 %% Read Wave File
 % filetitle = "src/generated/mono/square2000.wav";
 % filetitle = "src/generated/mono/square440.wav";
+% filetitle = "src/generated/mono/square689.wav";
+filetitle = "src/generated/mono/square2411.wav";
 % filetitle = "src/generated/mono/sine440.wav";
-filetitle = "src/generated/mono/sine689.wav";
+% filetitle = "src/generated/mono/sine689.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 [audioData,fs] = audioread(filetitle);
@@ -23,7 +25,7 @@ t = seconds(0:1/fs:(size(audioData,1)-1)/fs);
 
 f1 = figure('Name','STFT','NumberTitle','off');
 f1.Position(1:2) = [50 850];
-subplot(2,1,1)'
+subplot(2,1,1)
 plot(t,audioData)
 title("Przebieg")
 xlabel("Czas")
@@ -61,6 +63,7 @@ PointAmplitude = deg2rad(magnitude);
 MagnitudeDecibels = 20*log10(Ray);
 
 %% STEP 4 - FINDING PROMINENT SPECTRAL PEAKS
+% MinimumPeakHeight = 20; %in dB
 MinimumPeakHeight = 30; %in dB
 FrequencyRangeLow = 20; %in hz
 FrequencyRangeHigh = 16000; %in hz
@@ -150,8 +153,10 @@ for i=1:size(FrequencyPeaksHeightFiltered,2)
     end
 end
 
+% % Adding data relative to maxdB (the "negative dB scale")
 % Adding a row that will show values relative to max dB in whole sound
 maxdB = max(FrequencyPeaksRangeFiltered(4,:));
+% maxdB = 0;
 
 counter = 1;
 for i=1:size(FrequencyPeaksRangeFiltered,2)
@@ -161,8 +166,6 @@ end
 
 % Adding the same row to Frequency Peaks (for Peak Interpolation) - needed?
 % maxdB = max(FrequencyPeaks(4,:));
-
-% Adding data relative to maxdB (the "negative dB scale")
 counter = 1;
 for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(5,counter) = FrequencyPeaks(4,i)-maxdB;
@@ -217,6 +220,8 @@ FletcherMundson40LikeLoudnessCurveFull = FletcherMundson40LikeLoudnessCurveFullX
 %     FrequencyPeaksPositive(5,i) = FrequencyPeaksPositive(5,i) - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
 % end
 
+
+% TODO Czy nie powinno to być zaaplikowane dla amplitudy general-db-range?
 for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(5,i) = FrequencyPeaks(5,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
 end
@@ -240,22 +245,23 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
 
     % % TODO Sprawdzić czy dla alfy bety i gammy nie ujemnej wyniki będą
     % wychodzić poprawne.
+    % ZMIANA 9.08 - usunięto "-maxdB" z równań na alfę, betę i gammę
     %%ALPHA
     if(FrequencyPeaksdBFiltered(2,i)-1 == 0)
-        Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     else
         % Zakładamy, że valley jest takie samo dla elementów znajdujących się obok pików
-        Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     end
 
     %%BETA
-    Peaks(8,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+    Peaks(8,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
 
     %%GAMMA
     if(FrequencyPeaksdBFiltered(2,i)+1 == length(FrequencyPeaksdBFiltered))
-        Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     else
-        Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i)) - (PeakValleys(1,FrequencyPeaksdBFiltered(6,i)) + PeakValleys(2,FrequencyPeaksdBFiltered(6,i)))/2 - maxdB - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
     end
 
     %Assign parabola peak location - is it even necessary? - peak location
@@ -263,7 +269,7 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     Peaks(10,counter) = ((Peaks(7,counter)-Peaks(9,counter))/(Peaks(7,counter)-2*Peaks(8,counter)+Peaks(9,counter)))/2;
 
     %Assign magnitude peak height
-    Peaks(11,counter) = Peaks(8,counter) - (Peaks(7,counter)-Peaks(9,counter))/4*Peaks(10,counter);
+    Peaks(11,counter) = Peaks(8,counter) - ((Peaks(7,counter)-Peaks(9,counter))/4)*Peaks(10,counter);
 
     %Assign True Peak Location (in bins)
     Peaks(12,counter) = frequency(Peaks(2,counter)) + Peaks(10,counter);
@@ -290,8 +296,6 @@ alpha = double(2/W0_B);
 
 % Normalized amplitude
 N_Amp = Peaks(11,:) * alpha; %Czy na pewno to ma być tak zmierzone? W końcu skala jest -70-0?
-                             %Póki co te dane odrzucone - są stanowczo za
-                             %małe wartości.
 
 %% TODO SPRAWDZIĆ - Normalizacja zgodnie z punktem z ostatniego akapitu strony 47                          
 Peaks(11,:) = N_Amp;
@@ -339,6 +343,20 @@ for i=2:max(PeaksMod(2,:))
     NewPeaks = [];
     counter_in = 1;
 
+    % FAILSAFE WHEN THERE ARE NO TRAJECTORIES IN A SINGLE FRAME
+    if(isempty(PeaksLoc))
+        NewPeaks(1, counter_in) = NaN;
+        NewPeaks(2, counter_in) = NaN;
+        NewPeaks(3, counter_in) = NaN;
+        NewPeaks(4, counter_in) = NaN;
+        NewPeaks(5, counter_in) = NaN;
+        Trajectories(4*(i-1)+1,1) = NaN;
+        Trajectories(4*(i-1)+2,1) = NaN;
+        Trajectories(4*(i-1)+3,1) = NaN;
+        Trajectories(4*(i-1)+4,1) = NaN;
+        continue;
+    end
+
     % Iterate over every peak in time frame
     for peak=PeaksLoc
         % Adding peaks from next time window to variable
@@ -350,11 +368,19 @@ for i=2:max(PeaksMod(2,:))
         PeaksMod(5, peak) = 1; % Mark as used.
 
         % Measuring distance from all previous peaks
-        PeakLocCounter = 1;
-        for j=6:6+length(Trajectories(size(Trajectories,1),:))-1
-            NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),PeakLocCounter));
-            PeakLocCounter = PeakLocCounter + 1;
-        end
+        % if(size(Trajectories,2)~=1)
+            PeakLocCounter = 1;
+            for j=6:6+length(Trajectories(size(Trajectories,1),:))-1
+                NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),PeakLocCounter));
+                PeakLocCounter = PeakLocCounter + 1;
+            end
+            
+        % % Measuring distance from all previous peaks if there is only one trajectory
+        % else
+        %     NewPeaks(6, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),1));
+        % end
+
+
 
         counter_in = counter_in + 1;
     end
@@ -375,9 +401,9 @@ for i=2:max(PeaksMod(2,:))
     
     condition = false;
 
-    if(isempty(PeaksLoc))
-       condition = true; 
-    end
+    % if(isempty(PeaksLoc))
+    %    condition = true; 
+    % end
 
     while condition ~= true
         closestVal = min(NewPeaks(6:end,1:end),[],"all");
@@ -563,7 +589,7 @@ for tra = 2:size(Trajectories,1)/4
     end
 end
 OutputAmp = OutputAmp';
-% OutputAmp = OutputAmp./2;
+% OutputAmp = OutputAmp./3;
 
 % FAILSAFE
 if(OutputAmp>1)
@@ -600,10 +626,12 @@ ylabel("Amplituda")
 
 
 
-
-
-
-
+%% Test 
+% for i = 1:length(PeaksMod)
+%     if(PeaksMod(2,i)~= i)
+%         PeaksMod(2,i)
+%     end
+% end
 
 
 

@@ -343,6 +343,12 @@ end
 for i=2:max(PeaksMod(2,:))
     PeaksLoc = find(PeaksMod(2,:) == i);
     
+    % Od razu poszerzamy macierz
+    Trajectories(size(Trajectories,1)+4,1) = 0;
+    Trajectories(size(Trajectories,1)-3,1) = 0;
+    Trajectories(size(Trajectories,1)-2,1) = 0;
+    Trajectories(size(Trajectories,1)-1,1) = 0;
+
     NewPeaks = [];
     counter_in = 1;
 
@@ -375,7 +381,7 @@ for i=2:max(PeaksMod(2,:))
             PeakLocCounter = 1;
             for j=6:6+length(Trajectories(size(Trajectories,1),:))-1
                 % NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),PeakLocCounter));
-                NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(size(Trajectories,1),PeakLocCounter));
+                NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(size(Trajectories,1)-4,PeakLocCounter));
                 PeakLocCounter = PeakLocCounter + 1;
             end
             
@@ -392,10 +398,10 @@ for i=2:max(PeaksMod(2,:))
     % If trajectory was previously killed, continue it with NaN
     for j = 1:size(Trajectories,2)
         if(isnan(Trajectories(size(Trajectories,1),j)))
-            Trajectories(size(Trajectories,1)+1,j) = NaN;
-            Trajectories(size(Trajectories,1)+1,j) = NaN;
-            Trajectories(size(Trajectories,1)+1,j) = NaN;
-            Trajectories(size(Trajectories,1)+1,j) = NaN;
+            Trajectories(size(Trajectories,1)-3,j) = NaN;
+            Trajectories(size(Trajectories,1)-3,j) = NaN;
+            Trajectories(size(Trajectories,1)-3,j) = NaN;
+            Trajectories(size(Trajectories,1)-3,j) = NaN;
         end
     end
     
@@ -415,6 +421,15 @@ for i=2:max(PeaksMod(2,:))
         
         if(closestVal > MaximumPeakDeviation)
             condition = true;
+
+            % % Kill remaining trajectories
+            % for j = 1:size(Trajectories,2)
+            %     Trajectories(size(Trajectories,1)+4,j) = NaN;
+            %     Trajectories(size(Trajectories,1)-3,j) = NaN;
+            %     Trajectories(size(Trajectories,1)-2,j) = NaN;
+            %     Trajectories(size(Trajectories,1)-1,j) = NaN;
+            % end
+
             continue;
         end
         

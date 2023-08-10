@@ -8,9 +8,11 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/square2000.wav";
 % filetitle = "src/generated/mono/square440.wav";
 % filetitle = "src/generated/mono/square689.wav";
-filetitle = "src/generated/mono/square2411.wav";
+% filetitle = "src/generated/mono/square2411.wav";
 % filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/sine689.wav";
+% filetitle = "src/generated/mono/saw689.wav";
+filetitle = "src/generated/mono/chirp440_2000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 [audioData,fs] = audioread(filetitle);
@@ -44,14 +46,15 @@ subplot(2,1,2)
 
 % Kaiser window
 fftlength = 128;
+windowlength = 128;
 overlaplength = 96;
 hopsize = fftlength - overlaplength;
 beta = 6.0;
 % stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
-stft(audioData, fs, Window=kaiser(128,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided") %Note
+stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided") %Note
                                                                                                          %When this argument is set to "onesided", stft outputs the values in the positive 
                                                                                                          %Nyquist range and does not conserve the total power.
-[magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(128,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided");
+[magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided");
 % MagnitudeDecibels = mag2db(abs(magnitude));
 
 %% STEP 2 - CONVERSION TO POLAR COORDINATES
@@ -291,7 +294,7 @@ W0_partial = real(besseli(0, beta .* sqrt(1-(2.*Z./(128-1))))./I0_beta);
 W0 = sum(W0_partial);
 
 % TODO W0 czy W0_B? - Które rozwiązanie lepsze?
-W0_B = sum(kaiser(128,beta));
+W0_B = sum(kaiser(windowlength,beta));
 alpha = double(2/W0_B);
 
 % Normalized amplitude
@@ -305,7 +308,7 @@ Peaks(11,:) = N_Amp;
 
 %% STEP 6 - ASSIGNING PEAKS TO FREQUENCY TRAJECTORIES
 tic
-MaximumPeakDeviation = 10; %Większa granica -> mniej trajektorii
+MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
 
 PeaksMod = [];
 PeaksMod(1,:) = Peaks(2,:);
@@ -371,7 +374,8 @@ for i=2:max(PeaksMod(2,:))
         % if(size(Trajectories,2)~=1)
             PeakLocCounter = 1;
             for j=6:6+length(Trajectories(size(Trajectories,1),:))-1
-                NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),PeakLocCounter));
+                % NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),PeakLocCounter));
+                NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(size(Trajectories,1),PeakLocCounter));
                 PeakLocCounter = PeakLocCounter + 1;
             end
             

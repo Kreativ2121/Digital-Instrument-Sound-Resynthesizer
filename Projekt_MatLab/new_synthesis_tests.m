@@ -559,15 +559,21 @@ for tra = 2:size(Trajectories,1)/4
         for peak=1:NonZeroTrajectories
 
             %Add values saved from dying trajectories
+            % TODO TRAJEKTORIA JEST DODAWANA TYLKO DO PIERWSZEGO SYNTH
+            % FRAME'A - Czy tak ma być? - Można spróbować dodać zmienną
+            % trzymającą numery umierających trajektorii per każdy
+            % synthframe!
             if(~isempty(NextTrajectory) && peak == NextTrajectory(1))
                 FreqInst = FreqInstNext(1);
-                AmpSum = AmpSum + AmpSumNext(1)*cos(synframe * FreqInst); % W tej zmiennej wpisana jest już suma ze wzoru, nie liczymy ponownie częstotliwości
+                AmpSum = AmpSum + AmpSumNext(1)*cos((2*pi*FreqInst*stepcounter)/fs); % W tej zmiennej wpisana jest już suma ze wzoru, nie liczymy ponownie częstotliwości
                 AmpSumNext = AmpSumNext(2:end);
                 FreqInstNext = FreqInstNext(2:end);
                 NextTrajectory = NextTrajectory(2:end);
+            end
 
             %Measure the instantaneous amplitude
-            elseif(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
+            % Jeżeli nie istnieje już taka trajektoria
+            if(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
                 continue;
 
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
@@ -588,7 +594,9 @@ for tra = 2:size(Trajectories,1)/4
                     % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
                     % AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe;
                     AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (0 - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
-                    FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - 0)/synframesamount*synframe];
+                    % FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - 0)/synframesamount*synframe];
+                    FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak)/synframesamount*synframe];
+
                     NextTrajectory = [NextTrajectory, peak];
 
                     % Tu wpisujemy dane trajektorii umierającej, ale jeszcze przed jej zgonem

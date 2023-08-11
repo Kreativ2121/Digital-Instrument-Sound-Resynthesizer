@@ -590,6 +590,11 @@ for tra = 2:size(Trajectories,1)/4
                     AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (0 - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
                     FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - 0)/synframesamount*synframe];
                     NextTrajectory = [NextTrajectory, peak];
+
+                    % Tu wpisujemy dane trajektorii umierającej, ale jeszcze przed jej zgonem
+                    AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
+                    FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                    AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 else
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
@@ -621,10 +626,11 @@ end
 % output = uint8(output);
 audiowrite("output.wav",OutputAmp,fs);
 
-% TODO1: Częstotliwości w peaks nie odpowiadają tym, które powinny się tam
-% znaleźć z bezpośredniej analizy wykresu STFT
-% TODO2: Dźwięk wygenerowany z resyntezy to jakiś śmietnik czy ma to prawo
-% bytu? - sprawdzić
+
+
+
+
+% % % COMPARISONS
 
 %COMPARE RESULTS
 f2 = figure('Name','Comparison','NumberTitle','off');
@@ -665,14 +671,14 @@ f4.Position(3:4) = [1250 420];
 subplot(2,1,1)
 stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided")
 title("STFT of original data")
-xlabel("Czas")
-ylabel("Amplituda")
+xlabel("Time (s)")
+ylabel("Frequency (kHz)")
 
 subplot(2,1,2)
 stft(OutputAmp, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided")
 title("STFT of resynthesized data")
-xlabel("Czas")
-ylabel("Amplituda")
+xlabel("Time (s)")
+ylabel("Frequency (kHz)")
 
 
 %% Test 

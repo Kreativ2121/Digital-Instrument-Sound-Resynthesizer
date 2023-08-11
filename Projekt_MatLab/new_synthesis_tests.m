@@ -641,8 +641,38 @@ ylim([-1 1])
 xlabel("Czas (próbki)")
 ylabel("Amplituda")
 
+%COMPARE RESULTS OF WHOLE DATA
+f3 = figure('Name','Comparison of whole data','NumberTitle','off');
+f3.Position(1:2) = [50 55];
+f3.Position(3:4) = [2450 700];
+subplot(2,1,1)
+plot(audioData)
+title("Przebieg oryginalny")
+xlabel("Czas (próbki)")
+ylabel("Amplituda") 
+subplot(2,1,2)
+plot(OutputAmp)
+title("Przebieg zresyntezowany")
+ylim([-1 1])
+xlabel("Czas (próbki)")
+ylabel("Amplituda")
 
+%COMPARE ORIGINAL STFT WITH RESYNTHESIZED STFT
 
+f4 = figure('Name','STFT of resynthesized data','NumberTitle','off');
+f4.Position(1:2) = [1250 850];
+f4.Position(3:4) = [1250 420];
+subplot(2,1,1)
+stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided")
+title("STFT of original data")
+xlabel("Czas")
+ylabel("Amplituda")
+
+subplot(2,1,2)
+stft(OutputAmp, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided")
+title("STFT of resynthesized data")
+xlabel("Czas")
+ylabel("Amplituda")
 
 
 %% Test 

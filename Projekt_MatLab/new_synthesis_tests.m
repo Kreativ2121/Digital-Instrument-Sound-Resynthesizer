@@ -11,10 +11,12 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/square2411.wav";
 % filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/sine689.wav";
-% filetitle = "src/generated/mono/saw689.wav";
+%filetitle = "src/generated/mono/saw689.wav";
 filetitle = "src/generated/mono/chirp440_2000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
+ % filetitle = "src/download/CantinaBand3.wav";
+
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
 
@@ -46,8 +48,10 @@ subplot(2,1,2)
 
 % Kaiser window
 fftlength = 128;
-windowlength = 128;
-overlaplength = 96;
+% windowlength = 128;
+windowlength = fftlength;
+%overlaplength = 96;
+overlaplength = floor(0.75 * windowlength);
 hopsize = fftlength - overlaplength;
 beta = 6.0;
 % stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
@@ -67,7 +71,8 @@ MagnitudeDecibels = 20*log10(Ray);
 
 %% STEP 4 - FINDING PROMINENT SPECTRAL PEAKS
 % MinimumPeakHeight = 20; %in dB
-MinimumPeakHeight = 30; %in dB
+MinimumPeakHeightGlobal = 30; %in dB
+MinimumPeakHeightLocalThreshold = 1000; %in dB
 FrequencyRangeLow = 20; %in hz
 FrequencyRangeHigh = 16000; %in hz
 AmplitudeRangeLow = -70; %in dB ?
@@ -75,6 +80,13 @@ AmplitudeRangeHigh = 0; %in dB ?
 
 counter = 1;
 FrequencyPeaks = [];
+
+% Find maxAmplitudes in all Time Frames -> useful in discarding small peaks
+MaxAmplitudesInTimeFrames = zeros(1,size(MagnitudeDecibels,2));
+for i=1:size(MagnitudeDecibels,2)
+    MaxAmplitudesInTimeFrames(i) = max(MagnitudeDecibels(:,i));
+end
+
 
 % Find peaks
 % Loop on time frames
@@ -124,15 +136,39 @@ for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(6,i) = i;
 end
 
+% % Adding data relative to maxdB (the "negative dB scale")
+% Adding a row that will show values relative to max dB in whole sound
+% maxdB = max(FrequencyPeaksRangeFiltered(4,:));
+maxdB = max(FrequencyPeaks(4,:));
+% maxdB = 0;
+
+counter = 1;
+for i=1:size(FrequencyPeaks,2)
+    FrequencyPeaks(5,counter) = FrequencyPeaks(4,i)-maxdB;
+    counter = counter+1;
+end
+
+% Adding the same row to Frequency Peaks (for Peak Interpolation) - needed?
+% maxdB = max(FrequencyPeaks(4,:));
+counter = 1;
+for i=1:size(FrequencyPeaks,2)
+    FrequencyPeaks(5,counter) = FrequencyPeaks(4,i)-maxdB;
+    counter = counter+1;
+end
+
 % Filtering Small Peaks
 FrequencyPeaksHeightFiltered = [];
 counter = 1;
 for i=1:size(FrequencyPeaks,2)
-    if(FrequencyPeaks(4,i) >= MinimumPeakHeight)
+    maxAmplitudeInTimeFrame = MaxAmplitudesInTimeFrames(FrequencyPeaks(3,i));
+    MinimumPeakHeightLocal = MinimumPeakHeightLocalThreshold - maxdB - maxAmplitudeInTimeFrame;
+
+    if(FrequencyPeaks(4,i) >= MinimumPeakHeightGlobal || FrequencyPeaks(4,i) >= MinimumPeakHeightLocal)
         FrequencyPeaksHeightFiltered(1,counter) = FrequencyPeaks(1,i);
         FrequencyPeaksHeightFiltered(2,counter) = FrequencyPeaks(2,i);
         FrequencyPeaksHeightFiltered(3,counter) = FrequencyPeaks(3,i);
         FrequencyPeaksHeightFiltered(4,counter) = FrequencyPeaks(4,i);
+        FrequencyPeaksHeightFiltered(5,counter) = FrequencyPeaks(5,i);
         FrequencyPeaksHeightFiltered(6,counter) = FrequencyPeaks(6,i);
         counter = counter+1;
     end
@@ -151,28 +187,10 @@ for i=1:size(FrequencyPeaksHeightFiltered,2)
         FrequencyPeaksRangeFiltered(2,counter) = FrequencyPeaksHeightFiltered(2,i);
         FrequencyPeaksRangeFiltered(3,counter) = FrequencyPeaksHeightFiltered(3,i);
         FrequencyPeaksRangeFiltered(4,counter) = FrequencyPeaksHeightFiltered(4,i);
+        FrequencyPeaksRangeFiltered(5,counter) = FrequencyPeaksHeightFiltered(5,i);
         FrequencyPeaksRangeFiltered(6,counter) = FrequencyPeaksHeightFiltered(6,i);
         counter = counter+1;
     end
-end
-
-% % Adding data relative to maxdB (the "negative dB scale")
-% Adding a row that will show values relative to max dB in whole sound
-maxdB = max(FrequencyPeaksRangeFiltered(4,:));
-% maxdB = 0;
-
-counter = 1;
-for i=1:size(FrequencyPeaksRangeFiltered,2)
-    FrequencyPeaksRangeFiltered(5,counter) = FrequencyPeaksRangeFiltered(4,i)-maxdB;
-    counter = counter+1;
-end
-
-% Adding the same row to Frequency Peaks (for Peak Interpolation) - needed?
-% maxdB = max(FrequencyPeaks(4,:));
-counter = 1;
-for i=1:size(FrequencyPeaks,2)
-    FrequencyPeaks(5,counter) = FrequencyPeaks(4,i)-maxdB;
-    counter = counter+1;
 end
 
 % Discard peaks with very low magnitude in general-dB-range
@@ -294,7 +312,7 @@ W0_partial = real(besseli(0, beta .* sqrt(1-(2.*Z./(128-1))))./I0_beta);
 W0 = sum(W0_partial);
 
 % TODO W0 czy W0_B? - Które rozwiązanie lepsze?
-W0_B = sum(kaiser(windowlength,beta));
+W0_B = sum(kaiser(128,beta));
 alpha = double(2/W0_B);
 
 % Normalized amplitude
@@ -573,9 +591,9 @@ for tra = 2:size(Trajectories,1)/4
             
             % Jeżeli ta trajektoria właśnie umarła
             if(isnan(Trajectories(((tra-1)*4)+3,peak)) && ~isnan(Trajectories(((tra-2)*4)+3,peak)))
-                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (0 - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-2)*4)+4,peak)/synframesamount*synframe;
-                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                % AmpInst = Trajectories(((tra-2)*4)+3,peak) + (0 - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
+                % FreqInst = Trajectories(((tra-2)*4)+4,peak)/synframesamount*synframe;
+                % AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 continue;
 
             %Measure the instantaneous amplitude
@@ -585,9 +603,10 @@ for tra = 2:size(Trajectories,1)/4
 
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
             elseif((Trajectories(((tra-2)*4)+3,peak)) == 0)
-                AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
-                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                % AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
+                % % AmpInst = Trajectories(((tra-1)*4)+3,peak);
+                % FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
+                % AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
 
                 % if(isnan(Trajectories(((tra)*4)+3,peak)))
                 %     % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii

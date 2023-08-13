@@ -71,8 +71,8 @@ MagnitudeDecibels = 20*log10(Ray);
 
 %% STEP 4 - FINDING PROMINENT SPECTRAL PEAKS
 % MinimumPeakHeight = 20; %in dB
-MinimumPeakHeightGlobal = 30; %in dB
-MinimumPeakHeightLocalThreshold = 1000; %in dB
+MinimumPeakHeightGlobal = -40; %in dB
+MinimumPeakHeightLocal = -30; %in dB
 FrequencyRangeLow = 20; %in hz
 FrequencyRangeHigh = 16000; %in hz
 AmplitudeRangeLow = -70; %in dB ?
@@ -80,13 +80,6 @@ AmplitudeRangeHigh = 0; %in dB ?
 
 counter = 1;
 FrequencyPeaks = [];
-
-% Find maxAmplitudes in all Time Frames -> useful in discarding small peaks
-MaxAmplitudesInTimeFrames = zeros(1,size(MagnitudeDecibels,2));
-for i=1:size(MagnitudeDecibels,2)
-    MaxAmplitudesInTimeFrames(i) = max(MagnitudeDecibels(:,i));
-end
-
 
 % Find peaks
 % Loop on time frames
@@ -136,24 +129,30 @@ for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(6,i) = i;
 end
 
-% % Adding data relative to maxdB (the "negative dB scale")
+% % Adding magnitude data relative to maxdB (the "negative dB scale")
 % Adding a row that will show values relative to max dB in whole sound
 % maxdB = max(FrequencyPeaksRangeFiltered(4,:));
-maxdB = max(FrequencyPeaks(4,:));
+maxdB = max(FrequencyPeaks(1,:));
 % maxdB = 0;
 
 counter = 1;
 for i=1:size(FrequencyPeaks,2)
-    FrequencyPeaks(5,counter) = FrequencyPeaks(4,i)-maxdB;
+    FrequencyPeaks(5,counter) = FrequencyPeaks(1,i)-maxdB;
     counter = counter+1;
 end
 
 % Adding the same row to Frequency Peaks (for Peak Interpolation) - needed?
 % maxdB = max(FrequencyPeaks(4,:));
-counter = 1;
-for i=1:size(FrequencyPeaks,2)
-    FrequencyPeaks(5,counter) = FrequencyPeaks(4,i)-maxdB;
-    counter = counter+1;
+% counter = 1;
+% for i=1:size(FrequencyPeaks,2)
+%     FrequencyPeaks(5,counter) = FrequencyPeaks(1,i)-maxdB;
+%     counter = counter+1;
+% end
+
+% Find maxAmplitudes in all Time Frames -> useful in discarding small peaks
+MaxAmplitudesInTimeFrames = zeros(1,size(MagnitudeDecibels,2));
+for i=1:size(MagnitudeDecibels,2)
+    MaxAmplitudesInTimeFrames(i) = max(MagnitudeDecibels(:,i)) - maxdB;
 end
 
 % Filtering Small Peaks
@@ -161,9 +160,9 @@ FrequencyPeaksHeightFiltered = [];
 counter = 1;
 for i=1:size(FrequencyPeaks,2)
     maxAmplitudeInTimeFrame = MaxAmplitudesInTimeFrames(FrequencyPeaks(3,i));
-    MinimumPeakHeightLocal = MinimumPeakHeightLocalThreshold - maxdB - maxAmplitudeInTimeFrame;
+    MinimumPeakHeightLocalThreshold = maxAmplitudeInTimeFrame + MinimumPeakHeightLocal;
 
-    if(FrequencyPeaks(4,i) >= MinimumPeakHeightGlobal || FrequencyPeaks(4,i) >= MinimumPeakHeightLocal)
+    if(FrequencyPeaks(5,i) >= MinimumPeakHeightGlobal || FrequencyPeaks(5,i) >= MinimumPeakHeightLocalThreshold)
         FrequencyPeaksHeightFiltered(1,counter) = FrequencyPeaks(1,i);
         FrequencyPeaksHeightFiltered(2,counter) = FrequencyPeaks(2,i);
         FrequencyPeaksHeightFiltered(3,counter) = FrequencyPeaks(3,i);

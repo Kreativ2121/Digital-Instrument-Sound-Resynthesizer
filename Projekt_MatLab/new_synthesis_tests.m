@@ -328,7 +328,11 @@ Peaks(11,:) = N_Amp;
 
 %% STEP 6 - ASSIGNING PEAKS TO FREQUENCY TRAJECTORIES
 tic
-MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
+% UWAGA: Nie ma większych różnic przy zmianie na jedną ciągłą
+% trajektorię!!!
+
+MaximumPeakDeviation = 500;
+% MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
 
 PeaksMod = [];
 PeaksMod(1,:) = Peaks(2,:);
@@ -581,12 +585,17 @@ for tra = 2:size(Trajectories,1)/4
             % Jeżeli ta trajektoria właśnie umarła
             if(isnan(Trajectories(((tra-1)*4)+3,peak)) && ~isnan(Trajectories(((tra-2)*4)+3,peak)))
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (0 - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-2)*4)+4,peak)/synframesamount*synframe;
+
+                % RÓŻNE PATENTY NA INTERPOLACJE:
+                % FreqInst = Trajectories(((tra-2)*4)+4,peak)/synframesamount*synframe;
+                % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (0 - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-2)*4)+4,peak);
+                
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 continue;
 
             %Measure the instantaneous amplitude
-            % Jeżeli nie istnieje już taka trajektoria
+            % Jeżeli nie istnieje już taka trajektoria, ale nie umarła w poprzednim framie.
             elseif(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
                 continue;
 
@@ -594,6 +603,7 @@ for tra = 2:size(Trajectories,1)/4
             elseif((Trajectories(((tra-2)*4)+3,peak)) == 0)
                 AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
                 % AmpInst = Trajectories(((tra-1)*4)+3,peak);
+                % FreqInst = 0 + (Trajectories(((tra-1)*4)+4,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
 

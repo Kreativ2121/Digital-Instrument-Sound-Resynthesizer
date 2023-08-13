@@ -70,7 +70,7 @@ PointAmplitude = deg2rad(magnitude);
 MagnitudeDecibels = 20*log10(Ray);
 
 %% STEP 4 - FINDING PROMINENT SPECTRAL PEAKS
-% MinimumPeakHeight = 20; %in dB
+MinimumPeakHeightApprox = 20; %in dB
 MinimumPeakHeightGlobal = -40; %in dB
 MinimumPeakHeightLocal = -30; %in dB
 FrequencyRangeLow = 20; %in hz
@@ -162,7 +162,9 @@ for i=1:size(FrequencyPeaks,2)
     maxAmplitudeInTimeFrame = MaxAmplitudesInTimeFrames(FrequencyPeaks(3,i));
     MinimumPeakHeightLocalThreshold = maxAmplitudeInTimeFrame + MinimumPeakHeightLocal;
 
-    if(FrequencyPeaks(5,i) >= MinimumPeakHeightGlobal || FrequencyPeaks(5,i) >= MinimumPeakHeightLocalThreshold)
+    % Filtrowanie zarówno na bazie obszaru w którym się znajduje amplituda,
+    % jak i na bazie samej wielkości amplitudy pomniejszonej o doliny.
+    if((FrequencyPeaks(5,i) >= MinimumPeakHeightGlobal || FrequencyPeaks(5,i) >= MinimumPeakHeightLocalThreshold) && (FrequencyPeaks(4,i) > MinimumPeakHeightApprox))
         FrequencyPeaksHeightFiltered(1,counter) = FrequencyPeaks(1,i);
         FrequencyPeaksHeightFiltered(2,counter) = FrequencyPeaks(2,i);
         FrequencyPeaksHeightFiltered(3,counter) = FrequencyPeaks(3,i);

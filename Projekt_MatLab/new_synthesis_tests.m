@@ -576,25 +576,12 @@ for tra = 2:size(Trajectories,1)/4
 
         %%Iterate over peaks
         for peak=1:NonZeroTrajectories
-
-            %Add values saved from dying trajectories
-            % TODO TRAJEKTORIA JEST DODAWANA TYLKO DO PIERWSZEGO SYNTH
-            % FRAME'A - Czy tak ma być? - Można spróbować dodać zmienną
-            % trzymającą numery umierających trajektorii per każdy
-            % synthframe
-            % if(~isempty(NextTrajectory) && peak == NextTrajectory(1))
-            %     FreqInst = FreqInstNext(1);
-            %     AmpSum = AmpSum + AmpSumNext(1)*cos((2*pi*FreqInst*stepcounter)/fs); % W tej zmiennej wpisana jest już suma ze wzoru, nie liczymy ponownie częstotliwości
-            %     AmpSumNext = AmpSumNext(2:end);
-            %     FreqInstNext = FreqInstNext(2:end);
-            %     NextTrajectory = NextTrajectory(2:end);
-            % end
             
             % Jeżeli ta trajektoria właśnie umarła
             if(isnan(Trajectories(((tra-1)*4)+3,peak)) && ~isnan(Trajectories(((tra-2)*4)+3,peak)))
-                % AmpInst = Trajectories(((tra-2)*4)+3,peak) + (0 - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                % FreqInst = Trajectories(((tra-2)*4)+4,peak)/synframesamount*synframe;
-                % AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (0 - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-2)*4)+4,peak)/synframesamount*synframe;
+                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 continue;
 
             %Measure the instantaneous amplitude
@@ -604,28 +591,13 @@ for tra = 2:size(Trajectories,1)/4
 
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
             elseif((Trajectories(((tra-2)*4)+3,peak)) == 0)
-                % AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
-                % % AmpInst = Trajectories(((tra-1)*4)+3,peak);
-                % FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
-                % AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
-
-                % if(isnan(Trajectories(((tra)*4)+3,peak)))
-                %     % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
-                %     AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (0 - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
-                %     FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - 0)/synframesamount*synframe];
-                %     NextTrajectory = [NextTrajectory, peak];
-                % end
+                AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
+                % AmpInst = Trajectories(((tra-1)*4)+3,peak);
+                FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
+                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
 
             elseif(tra~=size(Trajectories,1)/4)
                 if(isnan(Trajectories(((tra)*4)+3,peak)))
-                    % Jeżeli trajektoria zaraz umrze - tutaj od razu należy zapisać "następną" wartość trajektorii
-                    % AmpSumNext = AmpSumNext + Trajectories(((tra-1)*4)+3,peak) + (Trajectories(((tra)*4)+3,peak) - Trajectories(((tra-1)*4)+3,peak))/NonZeroNonNaNTrajectoriesNext*synframe;
-                    % AmpSumNext = [AmpSumNext, Trajectories(((tra-1)*4)+3,peak) + (0 - Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe];
-                    % FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - 0)/synframesamount*synframe];
-                    % FreqInstNext = [FreqInstNext, Trajectories(((tra-1)*4)+4,peak)/synframesamount*synframe];
-
-                    % NextTrajectory = [NextTrajectory, peak];
-
                     % Tu wpisujemy dane trajektorii umierającej, ale jeszcze przed jej zgonem
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                     FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;

@@ -13,6 +13,7 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/sine689.wav";
 %filetitle = "src/generated/mono/saw689.wav";
 filetitle = "src/generated/mono/chirp440_2000.wav";
+% filetitle = "src/generated/mono/chirp2000_8000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
  % filetitle = "src/download/CantinaBand3.wav";
@@ -545,7 +546,7 @@ for synframe = 1:hopsize
     % Iterate over peaks in a first synth frame
     for peak=1:nnz(Trajectories(3,:))
         AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
-        % FreqInst = Trajectories(tra*4,peak) + (Trajectories(tra*4,peak) - Trajectories(tra*4+4,peak))/NonZeroNonNaNTrajectories*synframe;
+        % FreqInst = Trajectories(4,peak) + (Trajectories(4,peak) - Trajectories(4,peak))/NonZeroNonNaNTrajectories*synframe;
         FreqInst = Trajectories(4,peak);
         AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
     end

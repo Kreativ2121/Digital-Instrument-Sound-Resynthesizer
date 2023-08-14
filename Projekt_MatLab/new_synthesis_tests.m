@@ -16,7 +16,7 @@ filetitle = "src/generated/mono/chirp440_2000.wav";
 % filetitle = "src/generated/mono/chirp2000_8000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
- % filetitle = "src/download/CantinaBand3.wav";
+% filetitle = "src/download/CantinaBand3.wav";
 
 [audioData,fs] = audioread(filetitle);
 auInfo = audioinfo(filetitle);
@@ -331,8 +331,8 @@ tic
 % UWAGA: Nie ma większych różnic przy zmianie na jedną ciągłą
 % trajektorię!!!
 
-MaximumPeakDeviation = 500;
-% MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
+% MaximumPeakDeviation = 500;
+MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
 
 PeaksMod = [];
 PeaksMod(1,:) = Peaks(2,:);
@@ -622,7 +622,8 @@ for tra = 2:size(Trajectories,1)/4
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu time frame'a
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-2)*4)+4,peak);
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
             end
         end

@@ -331,8 +331,8 @@ tic
 % UWAGA: Nie ma większych różnic przy zmianie na jedną ciągłą
 % trajektorię!!!
 
-% MaximumPeakDeviation = 500;
-MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
+MaximumPeakDeviation = 500;
+% MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
 
 PeaksMod = [];
 PeaksMod(1,:) = Peaks(2,:);
@@ -617,10 +617,11 @@ for tra = 2:size(Trajectories,1)/4
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                     FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                    % FreqInst = Trajectories(((tra-1)*4)+4,peak);
                     AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 end
             else
-                % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu time frame'a
+                % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu wszystkich time frame'ów
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
                 % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
                 FreqInst = Trajectories(((tra-2)*4)+4,peak);

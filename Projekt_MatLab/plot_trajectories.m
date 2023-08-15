@@ -16,3 +16,4 @@ end
 title("Major Frequencies")
 xlabel("Time (Frames)")
 ylabel("Frequency (Hz)")
+grid on

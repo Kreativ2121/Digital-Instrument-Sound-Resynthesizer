@@ -532,11 +532,11 @@ AmpSum = 0;
 AmpSumNext = [];
 FreqInstNext = [];
 NextTrajectory = [];
-for tra = 2:size(Trajectories,1)/4
+for tra = 2:size(Trajectories,1)/5
     NonZeroTrajectories = numel(nonzeros(Trajectories(tra*4-3,:)));
     NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*4-3,:))) - sum(isnan(nonzeros(Trajectories(tra*4-3,:))));
 
-    if(tra<(size(Trajectories,1)/4))
+    if(tra<(size(Trajectories,1)/5))
         NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories((tra+1)*4-3,:))) - sum(isnan(nonzeros(Trajectories((tra+1)*4-3,:))));
     end
 
@@ -551,48 +551,49 @@ for tra = 2:size(Trajectories,1)/4
         for peak=1:NonZeroTrajectories
             
             % Jeżeli ta trajektoria właśnie umarła
-            if(isnan(Trajectories(((tra-1)*4)+3,peak)) && ~isnan(Trajectories(((tra-2)*4)+3,peak)))
-                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (0 - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
+            if(isnan(Trajectories(((tra-1)*5)+3,peak)) && ~isnan(Trajectories(((tra-2)*5)+3,peak)))
+                AmpInst = Trajectories(((tra-2)*5)+3,peak) + (0 - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
 
                 % RÓŻNE PATENTY NA INTERPOLACJE:
-                % FreqInst = Trajectories(((tra-2)*4)+4,peak)/synframesamount*synframe;
-                % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (0 - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-2)*4)+4,peak);
+                % FreqInst = Trajectories(((tra-2)*5)+4,peak)/synframesamount*synframe;
+                % FreqInst = Trajectories(((tra-2)*5)+4,peak) + (0 - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-2)*5)+4,peak);
                 
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 continue;
 
             %Measure the instantaneous amplitude
             % Jeżeli nie istnieje już taka trajektoria, ale nie umarła w poprzednim framie.
-            elseif(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
+            elseif(isnan(Trajectories(((tra-1)*5)+3,peak)) || Trajectories(((tra-1)*5)+3,peak)==0)
                 continue;
 
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
-            elseif((Trajectories(((tra-2)*4)+3,peak)) == 0)
-                AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
-                % AmpInst = Trajectories(((tra-1)*4)+3,peak);
-                % FreqInst = 0 + (Trajectories(((tra-1)*4)+4,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
+            elseif((Trajectories(((tra-2)*5)+3,peak)) == 0)
+                AmpInst = 0 + (Trajectories(((tra-1)*5)+3,peak))/synframesamount*synframe;
+                % AmpInst = Trajectories(((tra-1)*5)+3,peak);
+                % FreqInst = 0 + (Trajectories(((tra-1)*5)+4,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-1)*5)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
 
-            elseif(tra~=size(Trajectories,1)/4)
-                if(isnan(Trajectories(((tra)*4)+3,peak)))
+            elseif(tra~=size(Trajectories,1)/5)
+                if(isnan(Trajectories((tra*5)+3,peak)))
                     % Tu wpisujemy dane trajektorii umierającej, ale jeszcze przed jej zgonem
-                    AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                    FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                    AmpInst = Trajectories(((tra-2)*5)+3,peak) + (Trajectories(((tra-1)*5)+3,peak) - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
+                    FreqInst = Trajectories(((tra-2)*5)+4,peak) + (Trajectories(((tra-1)*5)+4,peak) - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
                     AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 else
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
-                    AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                    FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                    AmpInst = Trajectories(((tra-2)*5)+3,peak) + (Trajectories(((tra-1)*5)+3,peak) - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
+                    FreqInst = Trajectories(((tra-2)*5)+4,peak) + (Trajectories(((tra-1)*5)+4,peak) - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
                     % FreqInst = Trajectories(((tra-1)*4)+4,peak);
+                    % PhaseInst = phase_calculation_interpolation()
                     AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu wszystkich time frame'ów
-                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-2)*4)+4,peak);
+                AmpInst = Trajectories(((tra-2)*5)+3,peak) + (Trajectories(((tra-1)*5)+3,peak) - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
+                % FreqInst = Trajectories(((tra-2)*5)+4,peak) + (Trajectories(((tra-1)*5)+4,peak) - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-2)*5)+4,peak);
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
             end
         end

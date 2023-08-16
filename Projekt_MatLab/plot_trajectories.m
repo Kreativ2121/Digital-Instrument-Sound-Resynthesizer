@@ -3,7 +3,7 @@ clc;
 for i = 1:size(Trajectories,2)
     x = [];
     y = [];
-    for j = 1:4:size(Trajectories,1)
+    for j = 1:5:size(Trajectories,1)
         if(isnan(Trajectories(j+1,i)) || isnan(Trajectories(j+3,i)) || (Trajectories(j+1,i)==0 && Trajectories(j+3,i)==0))
             continue;
         end

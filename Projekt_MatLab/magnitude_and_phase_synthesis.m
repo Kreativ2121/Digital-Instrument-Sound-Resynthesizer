@@ -49,23 +49,19 @@ subplot(2,1,2)
 
 % Kaiser window
 fftlength = 128;
-% windowlength = 128;
 windowlength = fftlength;
 %overlaplength = 96;
 overlaplength = floor(0.75 * windowlength);
 hopsize = fftlength - overlaplength;
 beta = 6.0;
-% stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
 stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided") %Note
                                                                                                          %When this argument is set to "onesided", stft outputs the values in the positive 
                                                                                                          %Nyquist range and does not conserve the total power.
 [magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided");
-% MagnitudeDecibels = mag2db(abs(magnitude));
 
 %% STEP 2 - CONVERSION TO POLAR COORDINATES
 Ray = abs(magnitude);
-PointAmplitude = deg2rad(magnitude);
-% W dalszym etapie zmienne te póki co nie są używane
+PointAmplitude = deg2rad(magnitude); %TODO Czy ta linia ma sens?
 
 %% STEP 3 - CHANGING MAGNITUDE SCALE TO DECIBELS
 MagnitudeDecibels = 20*log10(Ray);
@@ -76,8 +72,8 @@ MinimumPeakHeightGlobal = -40; %in dB
 MinimumPeakHeightLocal = -30; %in dB
 FrequencyRangeLow = 20; %in hz
 FrequencyRangeHigh = 16000; %in hz
-AmplitudeRangeLow = -70; %in dB ?
-AmplitudeRangeHigh = 0; %in dB ?
+AmplitudeRangeLow = -70; %in dB
+AmplitudeRangeHigh = 0; %in dB
 
 counter = 1;
 FrequencyPeaks = [];
@@ -92,6 +88,7 @@ for j=1:size(MagnitudeDecibels,2)
             FrequencyPeaks(1,counter) = MagnitudeDecibels(i,j);
             FrequencyPeaks(2,counter) = i; % No. of bin
             FrequencyPeaks(3,counter) = j; % No. of time frame
+            FrequencyPeaks(7,counter) = angle(PointAmplitude(i,j));
             counter = counter + 1;
         end
     end
@@ -151,7 +148,7 @@ end
 % end
 
 % Find maxAmplitudes in all Time Frames -> useful in discarding small peaks
-MaxAmplitudesInTimeFrames = zeros(1,size(MagnitudeDecibels,2));
+ MaxAmplitudesInTimeFrames = zeros(1,size(MagnitudeDecibels,2));
 for i=1:size(MagnitudeDecibels,2)
     MaxAmplitudesInTimeFrames(i) = max(MagnitudeDecibels(:,i)) - maxdB;
 end
@@ -172,6 +169,7 @@ for i=1:size(FrequencyPeaks,2)
         FrequencyPeaksHeightFiltered(4,counter) = FrequencyPeaks(4,i);
         FrequencyPeaksHeightFiltered(5,counter) = FrequencyPeaks(5,i);
         FrequencyPeaksHeightFiltered(6,counter) = FrequencyPeaks(6,i);
+        FrequencyPeaksHeightFiltered(7,counter) = FrequencyPeaks(7,i);
         counter = counter+1;
     end
 end
@@ -191,6 +189,7 @@ for i=1:size(FrequencyPeaksHeightFiltered,2)
         FrequencyPeaksRangeFiltered(4,counter) = FrequencyPeaksHeightFiltered(4,i);
         FrequencyPeaksRangeFiltered(5,counter) = FrequencyPeaksHeightFiltered(5,i);
         FrequencyPeaksRangeFiltered(6,counter) = FrequencyPeaksHeightFiltered(6,i);
+        FrequencyPeaksRangeFiltered(7,counter) = FrequencyPeaksHeightFiltered(7,i);
         counter = counter+1;
     end
 end
@@ -206,6 +205,7 @@ for i=1:size(FrequencyPeaksRangeFiltered,2)
         FrequencyPeaksdBFiltered(4,counter) = FrequencyPeaksRangeFiltered(4,i);
         FrequencyPeaksdBFiltered(5,counter) = FrequencyPeaksRangeFiltered(5,i);
         FrequencyPeaksdBFiltered(6,counter) = FrequencyPeaksRangeFiltered(6,i);
+        FrequencyPeaksdBFiltered(7,counter) = FrequencyPeaksRangeFiltered(7,i);
         counter = counter+1;
     end
 end
@@ -247,6 +247,7 @@ FletcherMundson40LikeLoudnessCurveFull = FletcherMundson40LikeLoudnessCurveFullX
 % TODO Czy nie powinno to być zaaplikowane dla amplitudy general-db-range?
 for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(5,i) = FrequencyPeaks(5,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
+    FrequencyPeaks(1,i) = FrequencyPeaks(1,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
 end
 
 %% STEP 5 - Peak detection and interpolation - for negative scaled dB magnitude
@@ -265,6 +266,7 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     Peaks(4,counter) = FrequencyPeaksdBFiltered(4,i);
     Peaks(5,counter) = FrequencyPeaksdBFiltered(5,i);
     Peaks(6,counter) = FrequencyPeaksdBFiltered(6,i);
+    Peaks(7,counter) = FrequencyPeaksdBFiltered(7,i);
 
     % % TODO Sprawdzić czy dla alfy bety i gammy nie ujemnej wyniki będą
     % wychodzić poprawne.

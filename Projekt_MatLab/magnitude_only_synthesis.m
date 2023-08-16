@@ -246,6 +246,7 @@ FletcherMundson40LikeLoudnessCurveFull = FletcherMundson40LikeLoudnessCurveFullX
 
 % TODO Czy nie powinno to być zaaplikowane dla amplitudy general-db-range?
 for i=1:size(FrequencyPeaks,2)
+    FrequencyPeaks(1,i) = FrequencyPeaks(1,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
     FrequencyPeaks(5,i) = FrequencyPeaks(5,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
 end
 

@@ -533,15 +533,15 @@ AmpSumNext = [];
 FreqInstNext = [];
 NextTrajectory = [];
 for tra = 2:size(Trajectories,1)/5
-    NonZeroTrajectories = numel(nonzeros(Trajectories(tra*4-3,:)));
-    NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*4-3,:))) - sum(isnan(nonzeros(Trajectories(tra*4-3,:))));
+    NonZeroTrajectories = numel(nonzeros(Trajectories(tra*5-3,:)));
+    NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*5-3,:))) - sum(isnan(nonzeros(Trajectories(tra*5-3,:))));
 
     if(tra<(size(Trajectories,1)/5))
-        NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories((tra+1)*4-3,:))) - sum(isnan(nonzeros(Trajectories((tra+1)*4-3,:))));
+        NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories((tra+1)*5-3,:))) - sum(isnan(nonzeros(Trajectories((tra+1)*5-3,:))));
     end
 
     %Iterate over synth frames
-    synframesamount = floor(length(audioData)/(size(Trajectories,1)/4));
+    synframesamount = floor(length(audioData)/(size(Trajectories,1)/5));
     for synframe = 1:hopsize
 
         %Add peak sum calculated in the previous step

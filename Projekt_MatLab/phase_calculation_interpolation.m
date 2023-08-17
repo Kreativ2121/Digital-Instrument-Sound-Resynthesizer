@@ -15,5 +15,6 @@ jota = (-2/power(S,3))*(phase_now - phase_last - freq_last*S + 2*pi*M)+(1/power(
 % 3.23
 phase_inst = phase_last + freq_last*m + eta*power(m,2) + jota*power(m,3);
 % phase_inst = wrapToPi(phase_inst);
+phase_trunc = wrapToPi(phase_inst);
 end
 

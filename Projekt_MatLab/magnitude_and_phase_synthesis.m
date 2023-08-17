@@ -61,7 +61,7 @@ stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, Overl
 
 %% STEP 2 - CONVERSION TO POLAR COORDINATES
 Ray = abs(magnitude);
-PointAmplitude = deg2rad(angle(magnitude)); %TODO Czy ta linia ma sens?
+PointAmplitude = angle(magnitude); %TODO Czy ta linia ma sens?
 % PointAmplitude = angle(magnitude);
 
 %% STEP 3 - CHANGING MAGNITUDE SCALE TO DECIBELS
@@ -564,9 +564,9 @@ for tra = 2:size(Trajectories,1)/5
                     % FreqInst = Trajectories(((tra-1)*4)+4,peak);
                     % PhaseInst = Trajectories(5,peak);
                     % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), Trajectories(((tra-2)*5)+4,peak), Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
-                    PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
+                    PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak), Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
                     % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
-                    AmpSum = AmpSum + AmpInst*cos(PhaseInst);
+                    AmpSum = AmpSum + AmpInst*cos(PhaseInst)/fs;
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu wszystkich time frame'ów

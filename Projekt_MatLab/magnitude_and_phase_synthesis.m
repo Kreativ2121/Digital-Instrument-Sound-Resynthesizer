@@ -520,6 +520,7 @@ for synframe = 1:hopsize
         AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
         % FreqInst = Trajectories(4,peak) + (Trajectories(4,peak) - Trajectories(4,peak))/NonZeroNonNaNTrajectories*synframe;
         FreqInst = Trajectories(4,peak);
+        PhaseInst = Trajectories(5,peak);
         AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
     end
     OutputAmp(stepcounter) = AmpSum;
@@ -584,10 +585,13 @@ for tra = 2:size(Trajectories,1)/5
                 else
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
                     AmpInst = Trajectories(((tra-2)*5)+3,peak) + (Trajectories(((tra-1)*5)+3,peak) - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
-                    FreqInst = Trajectories(((tra-2)*5)+4,peak) + (Trajectories(((tra-1)*5)+4,peak) - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
+                    % FreqInst = Trajectories(((tra-2)*5)+4,peak) + (Trajectories(((tra-1)*5)+4,peak) - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
                     % FreqInst = Trajectories(((tra-1)*4)+4,peak);
-                    % PhaseInst = phase_calculation_interpolation()
-                    AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                    % PhaseInst = Trajectories(5,peak);
+                    % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), Trajectories(((tra-2)*5)+4,peak), Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
+                    PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
+                    % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
+                    AmpSum = AmpSum + AmpInst*cos(PhaseInst);
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu wszystkich time frame'ów

@@ -12,8 +12,8 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/sine689.wav";
 %filetitle = "src/generated/mono/saw689.wav";
-filetitle = "src/generated/mono/chirp440_2000.wav";
-% filetitle = "src/generated/mono/chirp2000_8000.wav";
+% filetitle = "src/generated/mono/chirp440_2000.wav";
+filetitle = "src/generated/mono/chirp2000_8000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 % filetitle = "src/download/CantinaBand3.wav";
@@ -61,7 +61,8 @@ stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, Overl
 
 %% STEP 2 - CONVERSION TO POLAR COORDINATES
 Ray = abs(magnitude);
-PointAmplitude = deg2rad(magnitude); %TODO Czy ta linia ma sens?
+PointAmplitude = deg2rad(angle(magnitude)); %TODO Czy ta linia ma sens?
+% PointAmplitude = angle(magnitude);
 
 %% STEP 3 - CHANGING MAGNITUDE SCALE TO DECIBELS
 MagnitudeDecibels = 20*log10(Ray);
@@ -88,7 +89,7 @@ for j=1:size(MagnitudeDecibels,2)
             FrequencyPeaks(1,counter) = MagnitudeDecibels(i,j);
             FrequencyPeaks(2,counter) = i; % No. of bin
             FrequencyPeaks(3,counter) = j; % No. of time frame
-            FrequencyPeaks(7,counter) = angle(PointAmplitude(i,j));
+            FrequencyPeaks(7,counter) = PointAmplitude(i,j);
             counter = counter + 1;
         end
     end
@@ -214,37 +215,10 @@ end
 FletcherMundson40LikeLoudnessCurveX = double(.05 + double(4000./frequency));
 FletcherMundson40LikeLoudnessCurveX = FletcherMundson40LikeLoudnessCurveX(ceil(length(FletcherMundson40LikeLoudnessCurveX)/2):end);
 FletcherMundson40LikeLoudnessCurve = FletcherMundson40LikeLoudnessCurveX .* 10.^(-FletcherMundson40LikeLoudnessCurveX);
-% plot(frequency(ceil(length(frequency)/2):end),FletcherMundson40LikeLoudnessCurve)
-% plot(frequency,FletcherMundson40LikeLoudnessCurveFull)
-%% ^ TODO OD WARTOŚCI WYŻEJ OBLICZYĆ WARTOŚCI W KROKU 5, WZIĄĆ POD UWAGĘ FREQUENCY!
 
 FletcherMundson40LikeLoudnessCurveFullX = double(.05 + double(4000./frequency));
 FletcherMundson40LikeLoudnessCurveFull = FletcherMundson40LikeLoudnessCurveFullX .* 10.^(-FletcherMundson40LikeLoudnessCurveFullX);
 
-% Choosing only positive frequency values - necessary? - NO! - Po zmianie
-% STFT brane są pod uwagę tylko nieujemne częstotliwości - możemy pominąć
-% ten krok!
-% FrequencyPeaksPositive = [];
-% counter = 1;
-% for i=1:size(FrequencyPeaksdBFiltered,2)
-%     if(FrequencyPeaksdBFiltered(2,i) >= ceil(length(frequency)/2))
-%         FrequencyPeaksPositive(1,counter) = FrequencyPeaksdBFiltered(1,i);
-%         FrequencyPeaksPositive(2,counter) = FrequencyPeaksdBFiltered(2,i);
-%         FrequencyPeaksPositive(3,counter) = FrequencyPeaksdBFiltered(3,i);
-%         FrequencyPeaksPositive(4,counter) = FrequencyPeaksdBFiltered(4,i);
-%         FrequencyPeaksPositive(5,counter) = FrequencyPeaksdBFiltered(5,i);
-%         FrequencyPeaksPositive(6,counter) = FrequencyPeaksdBFiltered(6,i);
-%         counter = counter+1;
-%     end
-% end
-
-% Applying equal loudness curve on magnitude as a fifth row
-% for i=1:size(FrequencyPeaksPositive,2)
-%     FrequencyPeaksPositive(5,i) = FrequencyPeaksPositive(5,i) - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
-% end
-
-
-% TODO Czy nie powinno to być zaaplikowane dla amplitudy general-db-range?
 for i=1:size(FrequencyPeaks,2)
     FrequencyPeaks(5,i) = FrequencyPeaks(5,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
     FrequencyPeaks(1,i) = FrequencyPeaks(1,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
@@ -274,24 +248,24 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     %%ALPHA
     if(FrequencyPeaksdBFiltered(2,i)-1 == 0)
         Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
-        Peaks(14,counter) = angle(PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)));
+        Peaks(14,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i));
     else
         % Zakładamy, że valley jest takie samo dla elementów znajdujących się obok pików
         Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
-        Peaks(14,counter) = angle(PointAmplitude(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i)));
+        Peaks(14,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i));
     end
     % angle(PointAmplitude(,))
     %%BETA
     Peaks(8,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
-    Peaks(15,counter) = angle(PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)));
+    Peaks(15,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i));
 
     %%GAMMA
     if(FrequencyPeaksdBFiltered(2,i)+1 == length(FrequencyPeaksdBFiltered))
         Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
-        Peaks(16,counter) = angle(PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)));
+        Peaks(16,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i));
     else
         Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
-        Peaks(16,counter) = angle(PointAmplitude(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i)));
+        Peaks(16,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i));
     end
 
     %Assign parabola peak location - is it even necessary? - peak location
@@ -347,6 +321,7 @@ PeaksMod(1,:) = Peaks(2,:);
 PeaksMod(2,:) = Peaks(3,:);
 PeaksMod(3,:) = Peaks(11,:);
 PeaksMod(4,:) = Peaks(12,:);
+% PeaksMod(5,:) = Peaks(13,:);
 PeaksMod(5,:) = Peaks(17,:);
 PeaksMod(6,:) = 0; % 0-unmatched 1-matched
 

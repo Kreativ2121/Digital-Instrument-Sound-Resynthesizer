@@ -12,8 +12,8 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/sine689.wav";
 %filetitle = "src/generated/mono/saw689.wav";
-filetitle = "src/generated/mono/chirp440_2000.wav";
-% filetitle = "src/generated/mono/chirp2000_8000.wav";
+% filetitle = "src/generated/mono/chirp440_2000.wav";
+filetitle = "src/generated/mono/chirp2000_8000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 % filetitle = "src/download/CantinaBand3.wav";
@@ -49,23 +49,20 @@ subplot(2,1,2)
 
 % Kaiser window
 fftlength = 128;
-% windowlength = 128;
 windowlength = fftlength;
 %overlaplength = 96;
 overlaplength = floor(0.75 * windowlength);
 hopsize = fftlength - overlaplength;
 beta = 6.0;
-% stft(audioData, fs, Window=kaiser(128,beta), FFTLength=128, OverlapLength=75)
 stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided") %Note
                                                                                                          %When this argument is set to "onesided", stft outputs the values in the positive 
                                                                                                          %Nyquist range and does not conserve the total power.
 [magnitude,frequency,time] = stft(audioData,fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided");
-% MagnitudeDecibels = mag2db(abs(magnitude));
 
 %% STEP 2 - CONVERSION TO POLAR COORDINATES
 Ray = abs(magnitude);
-PointAmplitude = deg2rad(magnitude);
-% W dalszym etapie zmienne te póki co nie są używane
+PointAmplitude = angle(magnitude); %TODO Czy ta linia ma sens?
+% PointAmplitude = angle(magnitude);
 
 %% STEP 3 - CHANGING MAGNITUDE SCALE TO DECIBELS
 MagnitudeDecibels = 20*log10(Ray);
@@ -76,8 +73,8 @@ MinimumPeakHeightGlobal = -40; %in dB
 MinimumPeakHeightLocal = -30; %in dB
 FrequencyRangeLow = 20; %in hz
 FrequencyRangeHigh = 16000; %in hz
-AmplitudeRangeLow = -70; %in dB ?
-AmplitudeRangeHigh = 0; %in dB ?
+AmplitudeRangeLow = -70; %in dB
+AmplitudeRangeHigh = 0; %in dB
 
 counter = 1;
 FrequencyPeaks = [];
@@ -92,6 +89,7 @@ for j=1:size(MagnitudeDecibels,2)
             FrequencyPeaks(1,counter) = MagnitudeDecibels(i,j);
             FrequencyPeaks(2,counter) = i; % No. of bin
             FrequencyPeaks(3,counter) = j; % No. of time frame
+            FrequencyPeaks(7,counter) = PointAmplitude(i,j);
             counter = counter + 1;
         end
     end
@@ -105,7 +103,7 @@ for i=1:size(FrequencyPeaks,2)
         if(MagnitudeDecibels(j,FrequencyPeaks(3,i)) <= prevValue)
             prevValue = MagnitudeDecibels(j,FrequencyPeaks(3,i));
         else
-            PeakValleys(i,1) = prevValue;
+            % PeakValleys(i,1) = prevValue;
             break;
         end
     end
@@ -116,7 +114,7 @@ for i=1:size(FrequencyPeaks,2)
         if(MagnitudeDecibels(j,FrequencyPeaks(3,i)) <= prevValue)
             prevValue = MagnitudeDecibels(j,FrequencyPeaks(3,i));
         else
-            PeakValleys(i,2) = prevValue;
+            % PeakValleys(i,2) = prevValue;
             break;
         end
     end
@@ -136,10 +134,10 @@ end
 maxdB = max(FrequencyPeaks(1,:));
 % maxdB = 0;
 
-counter = 1;
+% counter = 1;
 for i=1:size(FrequencyPeaks,2)
-    FrequencyPeaks(5,counter) = FrequencyPeaks(1,i)-maxdB;
-    counter = counter+1;
+    FrequencyPeaks(5,i) = FrequencyPeaks(1,i)-maxdB;
+    % counter = counter+1;
 end
 
 % Adding the same row to Frequency Peaks (for Peak Interpolation) - needed?
@@ -151,7 +149,7 @@ end
 % end
 
 % Find maxAmplitudes in all Time Frames -> useful in discarding small peaks
-MaxAmplitudesInTimeFrames = zeros(1,size(MagnitudeDecibels,2));
+ MaxAmplitudesInTimeFrames = zeros(1,size(MagnitudeDecibels,2));
 for i=1:size(MagnitudeDecibels,2)
     MaxAmplitudesInTimeFrames(i) = max(MagnitudeDecibels(:,i)) - maxdB;
 end
@@ -172,6 +170,7 @@ for i=1:size(FrequencyPeaks,2)
         FrequencyPeaksHeightFiltered(4,counter) = FrequencyPeaks(4,i);
         FrequencyPeaksHeightFiltered(5,counter) = FrequencyPeaks(5,i);
         FrequencyPeaksHeightFiltered(6,counter) = FrequencyPeaks(6,i);
+        FrequencyPeaksHeightFiltered(7,counter) = FrequencyPeaks(7,i);
         counter = counter+1;
     end
 end
@@ -191,6 +190,7 @@ for i=1:size(FrequencyPeaksHeightFiltered,2)
         FrequencyPeaksRangeFiltered(4,counter) = FrequencyPeaksHeightFiltered(4,i);
         FrequencyPeaksRangeFiltered(5,counter) = FrequencyPeaksHeightFiltered(5,i);
         FrequencyPeaksRangeFiltered(6,counter) = FrequencyPeaksHeightFiltered(6,i);
+        FrequencyPeaksRangeFiltered(7,counter) = FrequencyPeaksHeightFiltered(7,i);
         counter = counter+1;
     end
 end
@@ -206,6 +206,7 @@ for i=1:size(FrequencyPeaksRangeFiltered,2)
         FrequencyPeaksdBFiltered(4,counter) = FrequencyPeaksRangeFiltered(4,i);
         FrequencyPeaksdBFiltered(5,counter) = FrequencyPeaksRangeFiltered(5,i);
         FrequencyPeaksdBFiltered(6,counter) = FrequencyPeaksRangeFiltered(6,i);
+        FrequencyPeaksdBFiltered(7,counter) = FrequencyPeaksRangeFiltered(7,i);
         counter = counter+1;
     end
 end
@@ -214,40 +215,13 @@ end
 FletcherMundson40LikeLoudnessCurveX = double(.05 + double(4000./frequency));
 FletcherMundson40LikeLoudnessCurveX = FletcherMundson40LikeLoudnessCurveX(ceil(length(FletcherMundson40LikeLoudnessCurveX)/2):end);
 FletcherMundson40LikeLoudnessCurve = FletcherMundson40LikeLoudnessCurveX .* 10.^(-FletcherMundson40LikeLoudnessCurveX);
-% plot(frequency(ceil(length(frequency)/2):end),FletcherMundson40LikeLoudnessCurve)
-% plot(frequency,FletcherMundson40LikeLoudnessCurveFull)
-%% ^ TODO OD WARTOŚCI WYŻEJ OBLICZYĆ WARTOŚCI W KROKU 5, WZIĄĆ POD UWAGĘ FREQUENCY!
 
 FletcherMundson40LikeLoudnessCurveFullX = double(.05 + double(4000./frequency));
 FletcherMundson40LikeLoudnessCurveFull = FletcherMundson40LikeLoudnessCurveFullX .* 10.^(-FletcherMundson40LikeLoudnessCurveFullX);
 
-% Choosing only positive frequency values - necessary? - NO! - Po zmianie
-% STFT brane są pod uwagę tylko nieujemne częstotliwości - możemy pominąć
-% ten krok!
-% FrequencyPeaksPositive = [];
-% counter = 1;
-% for i=1:size(FrequencyPeaksdBFiltered,2)
-%     if(FrequencyPeaksdBFiltered(2,i) >= ceil(length(frequency)/2))
-%         FrequencyPeaksPositive(1,counter) = FrequencyPeaksdBFiltered(1,i);
-%         FrequencyPeaksPositive(2,counter) = FrequencyPeaksdBFiltered(2,i);
-%         FrequencyPeaksPositive(3,counter) = FrequencyPeaksdBFiltered(3,i);
-%         FrequencyPeaksPositive(4,counter) = FrequencyPeaksdBFiltered(4,i);
-%         FrequencyPeaksPositive(5,counter) = FrequencyPeaksdBFiltered(5,i);
-%         FrequencyPeaksPositive(6,counter) = FrequencyPeaksdBFiltered(6,i);
-%         counter = counter+1;
-%     end
-% end
-
-% Applying equal loudness curve on magnitude as a fifth row
-% for i=1:size(FrequencyPeaksPositive,2)
-%     FrequencyPeaksPositive(5,i) = FrequencyPeaksPositive(5,i) - FletcherMundson40LikeLoudnessCurve(FrequencyPeaksPositive(2,i)-ceil(length(frequency)/2)+1);
-% end
-
-
-% TODO Czy nie powinno to być zaaplikowane dla amplitudy general-db-range?
 for i=1:size(FrequencyPeaks,2)
-    FrequencyPeaks(1,i) = FrequencyPeaks(1,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
     FrequencyPeaks(5,i) = FrequencyPeaks(5,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
+    FrequencyPeaks(1,i) = FrequencyPeaks(1,i) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaks(2,i));
 end
 
 %% STEP 5 - Peak detection and interpolation - for negative scaled dB magnitude
@@ -267,6 +241,7 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     Peaks(4,counter) = FrequencyPeaksdBFiltered(4,i);
     Peaks(5,counter) = FrequencyPeaksdBFiltered(5,i);
     Peaks(6,counter) = FrequencyPeaksdBFiltered(6,i);
+    Peaks(13,counter) = FrequencyPeaksdBFiltered(7,i);
 
     % % TODO Sprawdzić czy dla alfy bety i gammy nie ujemnej wyniki będą
     % wychodzić poprawne.
@@ -274,31 +249,39 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     %%ALPHA
     if(FrequencyPeaksdBFiltered(2,i)-1 == 0)
         Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        % Peaks(14,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i));
     else
         % Zakładamy, że valley jest takie samo dla elementów znajdujących się obok pików
         Peaks(7,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        % Peaks(14,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i)-1,FrequencyPeaksdBFiltered(3,i));
     end
-
+    % angle(PointAmplitude(,))
     %%BETA
     Peaks(8,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+    % Peaks(15,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i));
 
     %%GAMMA
     if(FrequencyPeaksdBFiltered(2,i)+1 == length(FrequencyPeaksdBFiltered))
         Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        % Peaks(16,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i),FrequencyPeaksdBFiltered(3,i));
     else
         Peaks(9,counter) = (MagnitudeDecibels(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i)) - FletcherMundson40LikeLoudnessCurveFull(FrequencyPeaksdBFiltered(2,i)));
+        % Peaks(16,counter) = PointAmplitude(FrequencyPeaksdBFiltered(2,i)+1,FrequencyPeaksdBFiltered(3,i));
     end
 
-    %Assign parabola peak location - is it even necessary? - peak location
+    %Assign parabola peak location - is it even necessary? - peak location - p
     %not given before?
     Peaks(10,counter) = ((Peaks(7,counter)-Peaks(9,counter))/(Peaks(7,counter)-2*Peaks(8,counter)+Peaks(9,counter)))/2;
 
     %Assign magnitude peak height
-    Peaks(11,counter) = Peaks(8,counter) - ((Peaks(7,counter)-Peaks(9,counter))/4)*Peaks(10,counter);
+    % Peaks(11,counter) = Peaks(8,counter) - ((Peaks(7,counter)-Peaks(9,counter))/4)*Peaks(10,counter);
+    % PRZENIESIONE NIŻEJ
 
     %Assign True Peak Location (in bins)
-    Peaks(12,counter) = frequency(Peaks(2,counter)) + Peaks(10,counter);%*distanceBetweenFreqBins;
+    Peaks(12,counter) = frequency(Peaks(2,counter)) + Peaks(10,counter)*distanceBetweenFreqBins;
 
+    % % % PHASE CALCULATION - y(p)_theta
+    % Peaks(17,counter) = Peaks(15,counter) - ((Peaks(14,counter)-Peaks(16,counter))/4)*Peaks(10,counter);
     cplx = magnitude(Peaks(2,counter),Peaks(3,counter));
 
     if(counter==1)
@@ -317,8 +300,8 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     imag_yp = imag(cplx) - (1/4)*(imag(cplx_last)-imag(cplx_next))*Peaks(10,counter);
     
     new_cplx = complex(real_yp,imag_yp);
-    % Peaks(17,counter) = angle(new_cplx);
-    % Peaks(11,counter) = abs(new_cplx);
+    Peaks(17,counter) = angle(new_cplx);
+    Peaks(11,counter) = abs(new_cplx);
 
     counter = counter+1;
 end
@@ -351,8 +334,6 @@ Peaks(11,:) = N_Amp;
 
 %% STEP 6 - ASSIGNING PEAKS TO FREQUENCY TRAJECTORIES
 tic
-% UWAGA: Nie ma większych różnic przy zmianie na jedną ciągłą
-% trajektorię!!!
 
 MaximumPeakDeviation = 500;
 % MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
@@ -362,7 +343,9 @@ PeaksMod(1,:) = Peaks(2,:);
 PeaksMod(2,:) = Peaks(3,:);
 PeaksMod(3,:) = Peaks(11,:);
 PeaksMod(4,:) = Peaks(12,:);
-PeaksMod(5,:) = 0; % 0-unmatched 1-matched
+% PeaksMod(5,:) = Peaks(13,:);
+PeaksMod(5,:) = Peaks(17,:);
+PeaksMod(6,:) = 0; % 0-unmatched 1-matched
 
 % LowestNonNan = 1;
 Trajectories = [];
@@ -376,7 +359,8 @@ if(~isempty(FirstPeaksLoc))
         Trajectories(2,counter) = PeaksMod(2,FirstPeaksLoc(i));
         Trajectories(3,counter) = PeaksMod(3,FirstPeaksLoc(i));
         Trajectories(4,counter) = PeaksMod(4,FirstPeaksLoc(i));
-        PeaksMod(5,i) = 1;
+        Trajectories(5,counter) = PeaksMod(5,FirstPeaksLoc(i));
+        PeaksMod(6,FirstPeaksLoc(i)) = 1;
         counter = counter + 1;
     end
 else
@@ -384,6 +368,7 @@ else
     Trajectories(2,counter) = NaN;
     Trajectories(3,counter) = NaN;
     Trajectories(4,counter) = NaN;
+    Trajectories(5,counter) = NaN;
 end
 
 % Iterate over time frames
@@ -391,25 +376,28 @@ for i=2:max(PeaksMod(2,:))
     PeaksLoc = find(PeaksMod(2,:) == i);
     
     % Od razu poszerzamy macierz
-    Trajectories(size(Trajectories,1)+4,1) = 0;
-    Trajectories(size(Trajectories,1)-3,1) = 0;
-    Trajectories(size(Trajectories,1)-2,1) = 0;
-    Trajectories(size(Trajectories,1)-1,1) = 0;
+    Trajectories(size(Trajectories,1)+5,1) = 0;
+    % Trajectories(size(Trajectories,1)-4,1) = 0;
+    % Trajectories(size(Trajectories,1)-3,1) = 0;
+    % Trajectories(size(Trajectories,1)-2,1) = 0;
+    % Trajectories(size(Trajectories,1)-1,1) = 0;
 
     NewPeaks = [];
     counter_in = 1;
 
     % FAILSAFE WHEN THERE ARE NO TRAJECTORIES IN A SINGLE FRAME
     if(isempty(PeaksLoc))
-        NewPeaks(1, counter_in) = NaN;
-        NewPeaks(2, counter_in) = NaN;
-        NewPeaks(3, counter_in) = NaN;
-        NewPeaks(4, counter_in) = NaN;
-        NewPeaks(5, counter_in) = NaN;
-        Trajectories(4*(i-1)+1,1) = NaN;
-        Trajectories(4*(i-1)+2,1) = NaN;
-        Trajectories(4*(i-1)+3,1) = NaN;
-        Trajectories(4*(i-1)+4,1) = NaN;
+        % NewPeaks(1, counter_in) = NaN;
+        % NewPeaks(2, counter_in) = NaN;
+        % NewPeaks(3, counter_in) = NaN;
+        % NewPeaks(4, counter_in) = NaN;
+        % NewPeaks(5, counter_in) = NaN;
+        % NewPeaks(6, counter_in) = NaN;
+        Trajectories(5*(i-1)+1,1) = NaN;
+        Trajectories(5*(i-1)+2,1) = NaN;
+        Trajectories(5*(i-1)+3,1) = NaN;
+        Trajectories(5*(i-1)+4,1) = NaN;
+        Trajectories(5*(i-1)+5,1) = NaN;
         continue;
     end
 
@@ -421,34 +409,27 @@ for i=2:max(PeaksMod(2,:))
         NewPeaks(3, counter_in) = PeaksMod(2,peak);
         NewPeaks(4, counter_in) = PeaksMod(3,peak);
         NewPeaks(5, counter_in) = PeaksMod(4,peak);
-        PeaksMod(5, peak) = 1; % Mark as used.
+        NewPeaks(6, counter_in) = PeaksMod(5,peak);
+        PeaksMod(6, peak) = 1; % Mark as used.
 
         % Measuring distance from all previous peaks
-        % if(size(Trajectories,2)~=1)
-            PeakLocCounter = 1;
-            for j=6:6+length(Trajectories(size(Trajectories,1),:))-1
-                % NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),PeakLocCounter));
-                NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(size(Trajectories,1)-4,PeakLocCounter));
-                PeakLocCounter = PeakLocCounter + 1;
-            end
-            
-        % % Measuring distance from all previous peaks if there is only one trajectory
-        % else
-        %     NewPeaks(6, counter_in)=abs(PeaksMod(4,peak)-Trajectories(4+(4*(i-2)),1));
-        % end
-
-
+        PeakLocCounter = 1;
+        for j=7:6+size(Trajectories,2)
+            NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(size(Trajectories,1)-6,PeakLocCounter)); %%Czy to -5 aby na pewno potrzebne?
+            PeakLocCounter = PeakLocCounter + 1;
+        end
 
         counter_in = counter_in + 1;
     end
 
     % If trajectory was previously killed, continue it with NaN
     for j = 1:size(Trajectories,2)
-        if(isnan(Trajectories(size(Trajectories,1),j)))
+        if(isnan(Trajectories(size(Trajectories,1)-5,j)))
+            Trajectories(size(Trajectories,1)-4,j) = NaN;
             Trajectories(size(Trajectories,1)-3,j) = NaN;
-            Trajectories(size(Trajectories,1)-3,j) = NaN;
-            Trajectories(size(Trajectories,1)-3,j) = NaN;
-            Trajectories(size(Trajectories,1)-3,j) = NaN;
+            Trajectories(size(Trajectories,1)-2,j) = NaN;
+            Trajectories(size(Trajectories,1)-1,j) = NaN;
+            Trajectories(size(Trajectories,1),j) = NaN;
         end
     end
     
@@ -458,39 +439,28 @@ for i=2:max(PeaksMod(2,:))
     
     condition = false;
 
-    % if(isempty(PeaksLoc))
-    %    condition = true; 
-    % end
-
     while condition ~= true
-        closestVal = min(NewPeaks(6:end,1:end),[],"all");
-        [minRow,minCol] = find(NewPeaks(6:end,1:end)==closestVal);
+        closestVal = min(NewPeaks(7:end,1:end),[],"all");
+        [minRow,minCol] = find(NewPeaks(7:end,1:end)==closestVal);
         
         if(closestVal > MaximumPeakDeviation)
             condition = true;
 
-            % % Kill remaining trajectories
-            % for j = 1:size(Trajectories,2)
-            %     Trajectories(size(Trajectories,1)+4,j) = NaN;
-            %     Trajectories(size(Trajectories,1)-3,j) = NaN;
-            %     Trajectories(size(Trajectories,1)-2,j) = NaN;
-            %     Trajectories(size(Trajectories,1)-1,j) = NaN;
-            % end
-
             continue;
         end
         
-        Trajectories(4*(i-1)+1,minRow) = NewPeaks(2,minCol);
-        Trajectories(4*(i-1)+2,minRow) = NewPeaks(3,minCol);
-        Trajectories(4*(i-1)+3,minRow) = NewPeaks(4,minCol);
-        Trajectories(4*(i-1)+4,minRow) = NewPeaks(5,minCol);
+        Trajectories(5*(i-1)+1,minRow) = NewPeaks(2,minCol);
+        Trajectories(5*(i-1)+2,minRow) = NewPeaks(3,minCol);
+        Trajectories(5*(i-1)+3,minRow) = NewPeaks(4,minCol);
+        Trajectories(5*(i-1)+4,minRow) = NewPeaks(5,minCol);
+        Trajectories(5*(i-1)+5,minRow) = NewPeaks(6,minCol);
         % Discard the current peak
         for j=1:size(NewPeaks,1)
             NewPeaks(j,minCol) = NaN;
         end
         % Discard the trajectory associated with the current peak
         for j=1:size(NewPeaks,2)
-            NewPeaks(5+minRow,j) = NaN;
+            NewPeaks(6+minRow,j) = NaN;
         end
         PeakLocCounter = PeakLocCounter + 1;
 
@@ -501,7 +471,7 @@ for i=2:max(PeaksMod(2,:))
         end
 
         % If all peaks have been used
-        if(all(all(isnan(NewPeaks(6:end,1:end)))))
+        if(all(all(isnan(NewPeaks(7:end,1:end)))))
             condition = true;
             continue;
         end
@@ -510,6 +480,7 @@ for i=2:max(PeaksMod(2,:))
     % Kill remaining trajectories
     for j = 1:size(Trajectories,2)
         if(Trajectories(size(Trajectories,1)-3,j) == 0)
+            Trajectories(size(Trajectories,1)-4,j) = NaN;
             Trajectories(size(Trajectories,1)-3,j) = NaN;
             Trajectories(size(Trajectories,1)-2,j) = NaN;
             Trajectories(size(Trajectories,1)-1,j) = NaN;
@@ -520,46 +491,17 @@ for i=2:max(PeaksMod(2,:))
     % Create new trajectories from remaining peaks
     for j = 1:size(NewPeaks,2)
         if(~isnan(NewPeaks(1,j)))
-            Trajectories(size(Trajectories,1)-3,size(Trajectories,2)+1) = NewPeaks(2,j);
-            Trajectories(size(Trajectories,1)-2,size(Trajectories,2)) = NewPeaks(3,j);
-            Trajectories(size(Trajectories,1)-1,size(Trajectories,2)) = NewPeaks(4,j);
-            Trajectories(size(Trajectories,1),size(Trajectories,2)) = NewPeaks(5,j);
-            % NewPeaks(1,j) = NaN;
-            % NewPeaks(2,j) = NaN;
-            % NewPeaks(3,j) = NaN;
-            % NewPeaks(4,j) = NaN;
-            % NewPeaks(5,j) = NaN;
+            Trajectories(size(Trajectories,1)-4,size(Trajectories,2)+1) = NewPeaks(2,j);
+            Trajectories(size(Trajectories,1)-3,size(Trajectories,2)) = NewPeaks(3,j);
+            Trajectories(size(Trajectories,1)-2,size(Trajectories,2)) = NewPeaks(4,j);
+            Trajectories(size(Trajectories,1)-1,size(Trajectories,2)) = NewPeaks(5,j);
+            Trajectories(size(Trajectories,1),size(Trajectories,2)) = NewPeaks(6,j);
         end
     end
 end
 toc
 
 %% STEP 7
-
-% % % % % % % % % % % % % % % % % 
-% CREATE FAKE TRAJECTORIES
-
-% Trajectories(3,1) = 5;
-% Trajectories(3,2) = 0;
-% Trajectories(7,1) = 5;
-% Trajectories(7,2) = 0;
-% Trajectories(11,1) = 5;
-% Trajectories(11,2) = 0;
-% Trajectories(15,1) = 5;
-% Trajectories(15,2) = 0;
-% Trajectories(19,1) = 5;
-% Trajectories(19,2) = 0;
-% Trajectories(23,1) = 5;
-% Trajectories(23,2) = 0;
-
-% Trajectories(4,1) = 2000.0;
-% Trajectories(8,1) = 2000.00;
-% Trajectories(12,1) = 2000.00;
-% Trajectories(16,1) = 2000.00;
-% Trajectories(20,1) = 2000.00;
-% Trajectories(24,1) = 2000.00;
-
-% % % % % % % % % % % % % % % % %
 
 OutputAmp = [];
 stepcounter = 1;
@@ -575,6 +517,7 @@ for synframe = 1:hopsize
         AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
         % FreqInst = Trajectories(4,peak) + (Trajectories(4,peak) - Trajectories(4,peak))/NonZeroNonNaNTrajectories*synframe;
         FreqInst = Trajectories(4,peak);
+        PhaseInst = Trajectories(5,peak);
         AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
     end
     OutputAmp(stepcounter) = AmpSum;
@@ -587,16 +530,16 @@ AmpSum = 0;
 AmpSumNext = [];
 FreqInstNext = [];
 NextTrajectory = [];
-for tra = 2:size(Trajectories,1)/4
-    NonZeroTrajectories = numel(nonzeros(Trajectories(tra*4-3,:)));
-    NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*4-3,:))) - sum(isnan(nonzeros(Trajectories(tra*4-3,:))));
+for tra = 2:size(Trajectories,1)/5
+    NonZeroTrajectories = numel(nonzeros(Trajectories(tra*5-3,:)));
+    NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(tra*5-3,:))) - sum(isnan(nonzeros(Trajectories(tra*5-3,:))));
 
-    if(tra<(size(Trajectories,1)/4))
-        NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories((tra+1)*4-3,:))) - sum(isnan(nonzeros(Trajectories((tra+1)*4-3,:))));
+    if(tra<(size(Trajectories,1)/5))
+        NonZeroNonNaNTrajectoriesNext = numel(nonzeros(Trajectories((tra+1)*5-3,:))) - sum(isnan(nonzeros(Trajectories((tra+1)*5-3,:))));
     end
 
     %Iterate over synth frames
-    synframesamount = floor(length(audioData)/(size(Trajectories,1)/4));
+    synframesamount = floor(length(audioData)/(size(Trajectories,1)/5));
     for synframe = 1:hopsize
 
         %Add peak sum calculated in the previous step
@@ -606,48 +549,53 @@ for tra = 2:size(Trajectories,1)/4
         for peak=1:NonZeroTrajectories
             
             % Jeżeli ta trajektoria właśnie umarła
-            if(isnan(Trajectories(((tra-1)*4)+3,peak)) && ~isnan(Trajectories(((tra-2)*4)+3,peak)))
-                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (0 - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
+            if(isnan(Trajectories(((tra-1)*5)+3,peak)) && ~isnan(Trajectories(((tra-2)*5)+3,peak)))
+                AmpInst = Trajectories(((tra-2)*5)+3,peak) + (0 - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
 
                 % RÓŻNE PATENTY NA INTERPOLACJE:
-                % FreqInst = Trajectories(((tra-2)*4)+4,peak)/synframesamount*synframe;
-                % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (0 - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-2)*4)+4,peak);
+                % FreqInst = Trajectories(((tra-2)*5)+4,peak)/synframesamount*synframe;
+                % FreqInst = Trajectories(((tra-2)*5)+4,peak) + (0 - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-2)*5)+4,peak);
                 
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 continue;
 
             %Measure the instantaneous amplitude
             % Jeżeli nie istnieje już taka trajektoria, ale nie umarła w poprzednim framie.
-            elseif(isnan(Trajectories(((tra-1)*4)+3,peak)) || Trajectories(((tra-1)*4)+3,peak)==0)
+            elseif(isnan(Trajectories(((tra-1)*5)+3,peak)) || Trajectories(((tra-1)*5)+3,peak)==0)
                 continue;
 
             % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
-            elseif((Trajectories(((tra-2)*4)+3,peak)) == 0)
-                AmpInst = 0 + (Trajectories(((tra-1)*4)+3,peak))/synframesamount*synframe;
-                % AmpInst = Trajectories(((tra-1)*4)+3,peak);
-                % FreqInst = 0 + (Trajectories(((tra-1)*4)+4,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
+            elseif((Trajectories(((tra-2)*5)+3,peak)) == 0)
+                AmpInst = 0 + (Trajectories(((tra-1)*5)+3,peak))/synframesamount*synframe;
+                % AmpInst = Trajectories(((tra-1)*5)+3,peak);
+                % FreqInst = 0 + (Trajectories(((tra-1)*5)+4,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-1)*5)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
 
-            elseif(tra~=size(Trajectories,1)/4)
-                if(isnan(Trajectories(((tra)*4)+3,peak)))
+            elseif(tra~=size(Trajectories,1)/5)
+                if(isnan(Trajectories((tra*5)+3,peak)))
                     % Tu wpisujemy dane trajektorii umierającej, ale jeszcze przed jej zgonem
-                    AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                    FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                    AmpInst = Trajectories(((tra-2)*5)+3,peak) + (Trajectories(((tra-1)*5)+3,peak) - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
+                    FreqInst = Trajectories(((tra-2)*5)+4,peak) + (Trajectories(((tra-1)*5)+4,peak) - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
                     AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 else
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
-                    AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                    FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
+                    AmpInst = Trajectories(((tra-2)*5)+3,peak) + (Trajectories(((tra-1)*5)+3,peak) - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
+                    % FreqInst = Trajectories(((tra-2)*5)+4,peak) + (Trajectories(((tra-1)*5)+4,peak) - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
                     % FreqInst = Trajectories(((tra-1)*4)+4,peak);
-                    AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                    % PhaseInst = Trajectories(5,peak);
+                    % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), Trajectories(((tra-2)*5)+4,peak), Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
+                    PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak), Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
+                    % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
+                    AmpSum = AmpSum + AmpInst*cos(PhaseInst);
+                    % AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu wszystkich time frame'ów
-                AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*synframe;
-                % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*synframe;
-                FreqInst = Trajectories(((tra-2)*4)+4,peak);
+                AmpInst = Trajectories(((tra-2)*5)+3,peak) + (Trajectories(((tra-1)*5)+3,peak) - Trajectories(((tra-2)*5)+3,peak))/synframesamount*synframe;
+                % FreqInst = Trajectories(((tra-2)*5)+4,peak) + (Trajectories(((tra-1)*5)+4,peak) - Trajectories(((tra-2)*5)+4,peak))/synframesamount*synframe;
+                FreqInst = Trajectories(((tra-2)*5)+4,peak);
                 AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
             end
         end

@@ -9,11 +9,11 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/square440.wav";
 % filetitle = "src/generated/mono/square689.wav";
 % filetitle = "src/generated/mono/square2411.wav";
-% filetitle = "src/generated/mono/sine440.wav";
+filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/sine689.wav";
 %filetitle = "src/generated/mono/saw689.wav";
 % filetitle = "src/generated/mono/chirp440_2000.wav";
-filetitle = "src/generated/mono/chirp2000_8000.wav";
+% filetitle = "src/generated/mono/chirp2000_8000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 % filetitle = "src/download/CantinaBand3.wav";
@@ -103,7 +103,7 @@ for i=1:size(FrequencyPeaks,2)
         if(MagnitudeDecibels(j,FrequencyPeaks(3,i)) <= prevValue)
             prevValue = MagnitudeDecibels(j,FrequencyPeaks(3,i));
         else
-            PeakValleys(i,1) = prevValue;
+            % PeakValleys(i,1) = prevValue;
             break;
         end
     end
@@ -114,7 +114,7 @@ for i=1:size(FrequencyPeaks,2)
         if(MagnitudeDecibels(j,FrequencyPeaks(3,i)) <= prevValue)
             prevValue = MagnitudeDecibels(j,FrequencyPeaks(3,i));
         else
-            PeakValleys(i,2) = prevValue;
+            % PeakValleys(i,2) = prevValue;
             break;
         end
     end
@@ -134,10 +134,10 @@ end
 maxdB = max(FrequencyPeaks(1,:));
 % maxdB = 0;
 
-counter = 1;
+% counter = 1;
 for i=1:size(FrequencyPeaks,2)
-    FrequencyPeaks(5,counter) = FrequencyPeaks(1,i)-maxdB;
-    counter = counter+1;
+    FrequencyPeaks(5,i) = FrequencyPeaks(1,i)-maxdB;
+    % counter = counter+1;
 end
 
 % Adding the same row to Frequency Peaks (for Peak Interpolation) - needed?
@@ -226,6 +226,7 @@ end
 
 %% STEP 5 - Peak detection and interpolation - for negative scaled dB magnitude
 Peaks = [];
+distanceBetweenFreqBins = frequency(2)-frequency(1);
 counter = 1;
 for i=1:size(FrequencyPeaksdBFiltered,2)
     % Peaks(1,counter) = FrequencyPeaksPositive(1,i);
@@ -276,7 +277,7 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
     Peaks(11,counter) = Peaks(8,counter) - ((Peaks(7,counter)-Peaks(9,counter))/4)*Peaks(10,counter);
 
     %Assign True Peak Location (in bins)
-    Peaks(12,counter) = frequency(Peaks(2,counter)) + Peaks(10,counter);
+    Peaks(12,counter) = frequency(Peaks(2,counter)) + Peaks(10,counter)*distanceBetweenFreqBins;
 
     % % % PHASE CALCULATION - y(p)_theta
     Peaks(17,counter) = Peaks(15,counter) - ((Peaks(14,counter)-Peaks(16,counter))/4)*Peaks(10,counter);
@@ -338,7 +339,7 @@ if(~isempty(FirstPeaksLoc))
         Trajectories(3,counter) = PeaksMod(3,FirstPeaksLoc(i));
         Trajectories(4,counter) = PeaksMod(4,FirstPeaksLoc(i));
         Trajectories(5,counter) = PeaksMod(5,FirstPeaksLoc(i));
-        PeaksMod(6,i) = 1;
+        PeaksMod(6,FirstPeaksLoc(i)) = 1;
         counter = counter + 1;
     end
 else
@@ -365,17 +366,17 @@ for i=2:max(PeaksMod(2,:))
 
     % FAILSAFE WHEN THERE ARE NO TRAJECTORIES IN A SINGLE FRAME
     if(isempty(PeaksLoc))
-        NewPeaks(1, counter_in) = NaN;
-        NewPeaks(2, counter_in) = NaN;
-        NewPeaks(3, counter_in) = NaN;
-        NewPeaks(4, counter_in) = NaN;
-        NewPeaks(5, counter_in) = NaN;
-        NewPeaks(6, counter_in) = NaN;
-        Trajectories(4*(i-1)+1,1) = NaN;
-        Trajectories(4*(i-1)+2,1) = NaN;
-        Trajectories(4*(i-1)+3,1) = NaN;
-        Trajectories(4*(i-1)+4,1) = NaN;
-        Trajectories(4*(i-1)+5,1) = NaN;
+        % NewPeaks(1, counter_in) = NaN;
+        % NewPeaks(2, counter_in) = NaN;
+        % NewPeaks(3, counter_in) = NaN;
+        % NewPeaks(4, counter_in) = NaN;
+        % NewPeaks(5, counter_in) = NaN;
+        % NewPeaks(6, counter_in) = NaN;
+        Trajectories(5*(i-1)+1,1) = NaN;
+        Trajectories(5*(i-1)+2,1) = NaN;
+        Trajectories(5*(i-1)+3,1) = NaN;
+        Trajectories(5*(i-1)+4,1) = NaN;
+        Trajectories(5*(i-1)+5,1) = NaN;
         continue;
     end
 
@@ -392,7 +393,7 @@ for i=2:max(PeaksMod(2,:))
 
         % Measuring distance from all previous peaks
         PeakLocCounter = 1;
-        for j=7:7+length(Trajectories(size(Trajectories,1),:))-1
+        for j=7:6+size(Trajectories,2)
             NewPeaks(j, counter_in)=abs(PeaksMod(4,peak)-Trajectories(size(Trajectories,1)-6,PeakLocCounter)); %%Czy to -5 aby na pewno potrzebne?
             PeakLocCounter = PeakLocCounter + 1;
         end
@@ -402,7 +403,7 @@ for i=2:max(PeaksMod(2,:))
 
     % If trajectory was previously killed, continue it with NaN
     for j = 1:size(Trajectories,2)
-        if(isnan(Trajectories(size(Trajectories,1),j)))
+        if(isnan(Trajectories(size(Trajectories,1)-5,j)))
             Trajectories(size(Trajectories,1)-4,j) = NaN;
             Trajectories(size(Trajectories,1)-3,j) = NaN;
             Trajectories(size(Trajectories,1)-2,j) = NaN;
@@ -567,6 +568,7 @@ for tra = 2:size(Trajectories,1)/5
                     PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak), Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
                     % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
                     AmpSum = AmpSum + AmpInst*cos(PhaseInst);
+                    % AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 end
             else
                 % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu wszystkich time frame'ów

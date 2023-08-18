@@ -296,8 +296,8 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
         cplx_next = magnitude(Peaks(2,counter),Peaks(3,counter)+1);
     end
 
-    real_yp = real(cplx) - (1/4)*(real(cplx_last)-real(cplx_next))*Peaks(10,counter);
-    imag_yp = imag(cplx) - (1/4)*(imag(cplx_last)-imag(cplx_next))*Peaks(10,counter);
+    real_yp = real(20*log10(cplx)) - (1/4)*(real(20*log10(cplx_last))-real(20*log10(cplx_next)))*Peaks(10,counter);
+    imag_yp = imag(20*log10(cplx)) - (1/4)*(imag(20*log10(cplx_last))-imag(20*log10(cplx_next)))*Peaks(10,counter);
     
     new_cplx = complex(real_yp,imag_yp);
     Peaks(17,counter) = angle(new_cplx);
@@ -465,7 +465,7 @@ for i=2:max(PeaksMod(2,:))
         PeakLocCounter = PeakLocCounter + 1;
 
         % If all trajectories have been set
-        if(all(Trajectories(4*(i-1)+2,:)))
+        if(all(Trajectories(5*(i-1)+2,:)))
             condition = true;
             continue;
         end

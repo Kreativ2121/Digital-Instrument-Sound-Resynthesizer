@@ -588,7 +588,7 @@ for tra = 2:size(Trajectories,1)/5
                     % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), Trajectories(((tra-2)*5)+4,peak), Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
                     PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak), Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
                     % PhaseInst = phase_calculation_interpolation(Trajectories(((tra-2)*5)+5,peak),Trajectories(((tra-1)*5)+5,peak), 2*pi*Trajectories(((tra-2)*5)+4,peak), 2*pi*Trajectories(((tra-1)*5)+4,peak), synframe, synframesamount);
-                    AmpSum = AmpSum + AmpInst*cos(PhaseInst);
+                    AmpSum = AmpSum + AmpInst*cos(PhaseInst/fs);
                     % AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
                 end
             else

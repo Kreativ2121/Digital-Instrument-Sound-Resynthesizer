@@ -12,8 +12,8 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/sine689.wav";
 %filetitle = "src/generated/mono/saw689.wav";
-filetitle = "src/generated/mono/chirp440_2000.wav";
-% filetitle = "src/generated/mono/chirp2000_8000.wav";
+% filetitle = "src/generated/mono/chirp440_2000.wav";
+filetitle = "src/generated/mono/chirp2000_8000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 % filetitle = "src/download/CantinaBand3.wav";
@@ -482,18 +482,18 @@ stepcounter = 1;
 NonZeroNonNaNTrajectories = numel(nonzeros(Trajectories(1,:))) - sum(isnan(nonzeros(Trajectories(1,:))));
 
 %Iterate over synth frames in first time frame
-% for synframe = 1:hopsize
-%     AmpSum = 0;
-%     % Iterate over peaks in a first synth frame
-%     for peak=1:nnz(Trajectories(3,:))
-%         AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
-%         % FreqInst = Trajectories(4,peak) + (Trajectories(4,peak) - Trajectories(4,peak))/NonZeroNonNaNTrajectories*synframe;
-%         FreqInst = Trajectories(4,peak);
-%         AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
-%     end
-%     OutputAmp(stepcounter) = AmpSum;
-%     stepcounter = stepcounter + 1;
-% end
+for synframe = 1:hopsize
+    AmpSum = 0;
+    % Iterate over peaks in a first synth frame
+    for peak=1:nnz(Trajectories(3,:))
+        AmpInst = Trajectories(3,peak) + (Trajectories(3,peak) - Trajectories(3,peak))/NonZeroNonNaNTrajectories*synframe;
+        % FreqInst = Trajectories(4,peak) + (Trajectories(4,peak) - Trajectories(4,peak))/NonZeroNonNaNTrajectories*synframe;
+        FreqInst = Trajectories(4,peak);
+        AmpSum = AmpSum + AmpInst*sin((2*pi*FreqInst*stepcounter)/fs);
+    end
+    OutputAmp(stepcounter) = AmpSum;
+    stepcounter = stepcounter + 1;
+end
 
 %Iterate over time frames
 AmpInst = 0;
@@ -534,7 +534,7 @@ for tra = 2:size(Trajectories,1)/4
                 % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (0 - Trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
                 FreqInst = Trajectories(((tra-2)*4)+4,peak);
 
-                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                AmpSum = AmpSum + AmpInst*sin((2*pi*FreqInst*stepcounter)/fs);
                 continue;
 
             %Measure the instantaneous amplitude
@@ -548,14 +548,14 @@ for tra = 2:size(Trajectories,1)/4
                 % AmpInst = Trajectories(((tra-1)*4)+3,peak);
                 % FreqInst = 0 + (Trajectories(((tra-1)*4)+4,peak))/synframesamount*(synframe-1);
                 FreqInst = Trajectories(((tra-1)*4)+4,peak); % Czy częstotliwość też mam interpolować, kiedy próbka wcześniej nie istniała?
-                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                AmpSum = AmpSum + AmpInst*sin((2*pi*FreqInst*stepcounter)/fs);
 
             elseif(tra~=size(Trajectories,1)/4)
                 if(isnan(Trajectories(((tra)*4)+3,peak)))
                     % Tu wpisujemy dane trajektorii umierającej, ale jeszcze przed jej zgonem
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
                     FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
-                    AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                    AmpSum = AmpSum + AmpInst*sin((2*pi*FreqInst*stepcounter)/fs);
                 else
                     % Zwykła trajektoria - nie rodząca się i nie umierająca
                     AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
@@ -569,7 +569,7 @@ for tra = 2:size(Trajectories,1)/4
                 AmpInst = Trajectories(((tra-2)*4)+3,peak) + (Trajectories(((tra-1)*4)+3,peak) - Trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
                 % FreqInst = Trajectories(((tra-2)*4)+4,peak) + (Trajectories(((tra-1)*4)+4,peak) - Trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
                 FreqInst = Trajectories(((tra-2)*4)+4,peak);
-                AmpSum = AmpSum + AmpInst*cos((2*pi*FreqInst*stepcounter)/fs);
+                AmpSum = AmpSum + AmpInst*sin((2*pi*FreqInst*stepcounter)/fs);
             end
         end
 

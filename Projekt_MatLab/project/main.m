@@ -25,10 +25,10 @@ MaximumPeakDeviation = 30; %Większa granica -> mniej trajektorii
 % filetitle = "../src/generated/mono/square440.wav";
 % filetitle = "../src/generated/mono/square689.wav";
 % filetitle = "../src/generated/mono/square2411.wav";
-filetitle = "../src/generated/mono/sine440.wav";
+% filetitle = "../src/generated/mono/sine440.wav";
 % filetitle = "../src/generated/mono/sine689.wav";
 % filetitle = "../src/generated/mono/saw689.wav";
-% filetitle = "../src/generated/mono/chirp440_2000.wav";
+filetitle = "../src/generated/mono/chirp440_2000.wav";
 % filetitle = "../src/generated/mono/chirp2000_8000.wav";
 % filetitle = "../src/generated/mono/sine2000.wav";
 % filetitle = "../src/generated/mono/square2000_additivesynthesis.wav";
@@ -56,7 +56,7 @@ fletcher_and_mundson_40dB = fletcher_and_mundson_40dB_curve_generator(frequency)
 
 %% STEP 2
 peaks = step2_peak_detection_and_interpolation(frequencyPeaksFiltered, ...
-    magnitude, magnitudeDecibels, frequency, fletcher_and_mundson_40dB);
+    magnitudeDecibels, frequency, fletcher_and_mundson_40dB);
 peaks = normalize_amplitudes(peaks, windowLength, beta);
 
 %% STEP 3

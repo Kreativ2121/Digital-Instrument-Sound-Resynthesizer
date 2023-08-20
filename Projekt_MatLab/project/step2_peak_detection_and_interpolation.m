@@ -1,4 +1,4 @@
-function [peaks] = step2_peak_detection_and_interpolation(frequencyPeaksdBFiltered, magnitude, magnitudeDecibels, frequency, fletcher_and_mundson_40dB)
+function [peaks] = step2_peak_detection_and_interpolation(frequencyPeaksdBFiltered, magnitudeDecibels, frequency, fletcher_and_mundson_40dB)
 %step2_peak_detection_and_interpolation A part of the algorithm that is
 %responsible for peak interpolation.
 %   this part of the algorythm is responsible for peak interpolation. Based

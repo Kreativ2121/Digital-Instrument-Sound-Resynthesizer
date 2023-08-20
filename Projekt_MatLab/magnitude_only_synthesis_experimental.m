@@ -8,12 +8,12 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/square2000.wav";
 % filetitle = "src/generated/mono/square440.wav";
 % filetitle = "src/generated/mono/square689.wav";
-% filetitle = "src/generated/mono/square2411.wav";
+filetitle = "src/generated/mono/square2411.wav";
 % filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/sine689.wav";
 %filetitle = "src/generated/mono/saw689.wav";
 % filetitle = "src/generated/mono/chirp440_2000.wav";
-filetitle = "src/generated/mono/chirp2000_8000.wav";
+% filetitle = "src/generated/mono/chirp2000_8000.wav";
 % filetitle = "src/generated/mono/sine2000.wav";
 % filetitle = "src/generated/mono/square2000_additivesynthesis.wav";
 % filetitle = "src/download/CantinaBand3.wav";
@@ -266,13 +266,13 @@ for i=1:size(FrequencyPeaksdBFiltered,2)
 
     cplx = magnitude(Peaks(2,counter),Peaks(3,counter));
 
-    if(counter==1)
+    if(Peaks(3,counter)==1)
         cplx_last = magnitude(Peaks(2,counter),Peaks(3,counter));
     else
         cplx_last = magnitude(Peaks(2,counter),Peaks(3,counter)-1);
     end
 
-    if(counter==size(FrequencyPeaksdBFiltered,2))
+    if(Peaks(3,counter)==size(magnitude,2))
         cplx_next = magnitude(Peaks(2,counter),Peaks(3,counter));
     else
         cplx_next = magnitude(Peaks(2,counter),Peaks(3,counter)+1);
@@ -317,8 +317,8 @@ Peaks(11,:) = N_Amp;
 %% STEP 6 - ASSIGNING PEAKS TO FREQUENCY TRAJECTORIES
 tic
 
-MaximumPeakDeviation = 500;
-% MaximumPeakDeviation = 300; %Większa granica -> mniej trajektorii
+% MaximumPeakDeviation = 500;
+MaximumPeakDeviation = 30; %Większa granica -> mniej trajektorii
 
 PeaksMod = [];
 PeaksMod(1,:) = Peaks(2,:);
@@ -625,12 +625,13 @@ OutputAmp = OutputAmp';
 
 
 % FAILSAFE
-if(OutputAmp>1)
-   OutputAmp = 1.00;
-elseif(OutputAmp<-1)
-    OutputAmp = -1.00;
+for i=1:size(OutputAmp)
+    if(OutputAmp(i)>1)
+       OutputAmp(i) = 1.00;
+    elseif(OutputAmp(i)<-1)
+        OutputAmp(i) = -1.00;
+    end
 end
-
 %Zapisanie zresyntezowanego audio do pliku
 % output = uint8(output);
 audiowrite("output.wav",OutputAmp,fs);

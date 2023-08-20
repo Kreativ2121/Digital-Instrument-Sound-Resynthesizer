@@ -1,4 +1,4 @@
-function plot_results(audioData, OutputAmp, fs, windowlength, beta, fftlength, overlaplength)
+function plot_results(audioData, OutputAmp, fs, windowLength, beta, fftLength, overlapLength)
 %compare_results Function that makes plots based on the input and output
 %data of the algorythm.
 %   This function makes three plots based on the data that was feeded to
@@ -44,13 +44,17 @@ function plot_results(audioData, OutputAmp, fs, windowlength, beta, fftlength, o
     f4.Position(1:2) = [1250 850];
     f4.Position(3:4) = [1250 420];
     subplot(2,1,1)
-    stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided")
+    stft(audioData, fs, Window=kaiser(windowLength,beta), ...
+        FFTLength=fftLength, OverlapLength=overlapLength, ...
+        FrequencyRange="onesided")
     title("STFT of original data")
     xlabel("Time (s)")
     ylabel("Frequency (kHz)")
     
     subplot(2,1,2)
-    stft(OutputAmp, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided")
+    stft(OutputAmp, fs, Window=kaiser(windowLength,beta), ...
+        FFTLength=fftLength, OverlapLength=overlapLength, ...
+        FrequencyRange="onesided")
     title("STFT of resynthesized data")
     xlabel("Time (s)")
     ylabel("Frequency (kHz)")

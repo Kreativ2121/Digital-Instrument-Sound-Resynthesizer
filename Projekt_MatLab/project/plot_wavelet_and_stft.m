@@ -1,4 +1,4 @@
-function plot_wavelet_and_stft(audioData, fs, fftlength, windowlength, overlaplength, beta)
+function plot_wavelet_and_stft(audioData, fs, fftLength, windowLength, overlapLength, beta)
 %plot_wavelet_and_stf Function that makes a plot of a few hundred first input audio
 %values and makes a STFT plot with given variables.
 
@@ -19,6 +19,8 @@ function plot_wavelet_and_stft(audioData, fs, fftlength, windowlength, overlaple
     
     %% Plot STFT
     subplot(2,1,2)
-    stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided")
+    stft(audioData, fs, Window=kaiser(windowLength,beta), ...
+        FFTLength=fftLength, OverlapLength=overlapLength, ...
+        FrequencyRange="onesided")
 end
 

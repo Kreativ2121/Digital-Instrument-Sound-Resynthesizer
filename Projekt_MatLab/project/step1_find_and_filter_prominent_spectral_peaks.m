@@ -1,62 +1,70 @@
-function [FrequencyPeaks, FrequencyPeaksdBFiltered] = step1_find_and_filter_prominent_spectral_peaks(magnitudeDecibels, frequency, MinimumPeakHeightApprox, MinimumPeakHeightLocal, MinimumPeakHeightGlobal, AmplitudeRangeLow, FrequencyRangeLow, FrequencyRangeHigh)
-%step1_find_prominent_spectral_peaks Step 1 of the algorythm
-%   Detailed explanation goes here
+function [frequencyPeaks, frequencyPeaksdBFiltered] = ...
+    step1_find_and_filter_prominent_spectral_peaks(magnitudeDecibels, ...
+    frequency, minimumPeakHeightApprox, minimumPeakHeightLocal, ...
+    minimumPeakHeightGlobal, amplitudeRangeLow, frequencyRangeLow, ...
+    frequencyRangeHigh)
+%step1_find_prominent_spectral_peaks A part of the algorythm that is
+%responsible for finding peaks.
+%   This part of code finds all peaks in a post STFT data. Then filters all
+%   minor or non-important peaks in accordance to set conditions.
     counter = 1;
-    FrequencyPeaks = [];
+    frequencyPeaks = [];
     
     % Find peaks
     % Loop on time frames
     for j=1:size(magnitudeDecibels,2)
         % Loop on frequency bins
         for i=2:size(magnitudeDecibels,1)-1
-            if(magnitudeDecibels(i,j) >= magnitudeDecibels(i-1,j) && magnitudeDecibels(i,j) >= magnitudeDecibels(i+1,j))
-                FrequencyPeaks(1,counter) = magnitudeDecibels(i,j);
-                FrequencyPeaks(2,counter) = i; % No. of bin
-                FrequencyPeaks(3,counter) = j; % No. of time frame
+            if(magnitudeDecibels(i,j) >= magnitudeDecibels(i-1,j) && ...
+                    magnitudeDecibels(i,j) >= magnitudeDecibels(i+1,j))
+                frequencyPeaks(1,counter) = magnitudeDecibels(i,j);
+                frequencyPeaks(2,counter) = i; % No. of bin
+                frequencyPeaks(3,counter) = j; % No. of time frame
                 counter = counter + 1;
             end
         end
     end
     
     % Find valleys for all peaks
-    PeakValleys = [];
-    for i=1:size(FrequencyPeaks,2)
-        prevValue = FrequencyPeaks(1,i);
-        for j = FrequencyPeaks(2,i):-1:1
-            if(magnitudeDecibels(j,FrequencyPeaks(3,i)) <= prevValue)
-                prevValue = magnitudeDecibels(j,FrequencyPeaks(3,i));
+    peakValleys = [];
+    for i=1:size(frequencyPeaks,2)
+        prevValue = frequencyPeaks(1,i);
+        for j = frequencyPeaks(2,i):-1:1
+            if(magnitudeDecibels(j,frequencyPeaks(3,i)) <= prevValue)
+                prevValue = magnitudeDecibels(j,frequencyPeaks(3,i));
             else
-                PeakValleys(i,1) = prevValue;
+                peakValleys(i,1) = prevValue;
                 break;
             end
         end
-        PeakValleys(i,1) = prevValue;
+        peakValleys(i,1) = prevValue;
     
-        prevValue = FrequencyPeaks(1,i);
-        for j = FrequencyPeaks(2,i):size(magnitudeDecibels,1)
-            if(magnitudeDecibels(j,FrequencyPeaks(3,i)) <= prevValue)
-                prevValue = magnitudeDecibels(j,FrequencyPeaks(3,i));
+        prevValue = frequencyPeaks(1,i);
+        for j = frequencyPeaks(2,i):size(magnitudeDecibels,1)
+            if(magnitudeDecibels(j,frequencyPeaks(3,i)) <= prevValue)
+                prevValue = magnitudeDecibels(j,frequencyPeaks(3,i));
             else
-                PeakValleys(i,2) = prevValue;
+                peakValleys(i,2) = prevValue;
                 break;
             end
         end
-        PeakValleys(i,2) = prevValue;
+        peakValleys(i,2) = prevValue;
     end
-    PeakValleys = PeakValleys';
+    peakValleys = peakValleys';
     
     % Assigning Peak Heights and unique index - usable for peak interpolation
-    for i=1:size(FrequencyPeaks,2)
-        FrequencyPeaks(4,i) = FrequencyPeaks(1,i) - (PeakValleys(1,i) + PeakValleys(2,i))/2; % Peak heights in dB
-        FrequencyPeaks(6,i) = i;
+    for i=1:size(frequencyPeaks,2)
+        frequencyPeaks(4,i) = frequencyPeaks(1,i) - (peakValleys(1,i) + ...
+            peakValleys(2,i))/2; % Peak heights in dB
+        frequencyPeaks(6,i) = i;
     end
     
     % % Adding magnitude data relative to maxdB (the "negative dB scale")
-    maxdB = max(FrequencyPeaks(1,:));
+    maxdB = max(frequencyPeaks(1,:));
     
     counter = 1;
-    for i=1:size(FrequencyPeaks,2)
-        FrequencyPeaks(5,counter) = FrequencyPeaks(1,i)-maxdB;
+    for i=1:size(frequencyPeaks,2)
+        frequencyPeaks(5,counter) = frequencyPeaks(1,i)-maxdB;
         counter = counter+1;
     end
     
@@ -67,51 +75,55 @@ function [FrequencyPeaks, FrequencyPeaksdBFiltered] = step1_find_and_filter_prom
     end
     
     % Filtering Small Peaks
-    FrequencyPeaksHeightFiltered = [];
+    frequencyPeaksHeightFiltered = [];
     counter = 1;
-    for i=1:size(FrequencyPeaks,2)
-        maxAmplitudeInTimeFrame = MaxAmplitudesInTimeFrames(FrequencyPeaks(3,i));
-        MinimumPeakHeightLocalThreshold = maxAmplitudeInTimeFrame + MinimumPeakHeightLocal;
+    for i=1:size(frequencyPeaks,2)
+        maxAmplitudeInTimeFrame = MaxAmplitudesInTimeFrames(frequencyPeaks(3,i));
+        minimumPeakHeightLocalThreshold = maxAmplitudeInTimeFrame ...
+        +minimumPeakHeightLocal;
     
         % Filtrowanie zarówno na bazie obszaru w którym się znajduje amplituda,
         % jak i na bazie samej wielkości amplitudy pomniejszonej o doliny.
-        if((FrequencyPeaks(5,i) >= MinimumPeakHeightGlobal || FrequencyPeaks(5,i) >= MinimumPeakHeightLocalThreshold) && (FrequencyPeaks(4,i) > MinimumPeakHeightApprox))
-            FrequencyPeaksHeightFiltered(1,counter) = FrequencyPeaks(1,i);
-            FrequencyPeaksHeightFiltered(2,counter) = FrequencyPeaks(2,i);
-            FrequencyPeaksHeightFiltered(3,counter) = FrequencyPeaks(3,i);
-            FrequencyPeaksHeightFiltered(4,counter) = FrequencyPeaks(4,i);
-            FrequencyPeaksHeightFiltered(5,counter) = FrequencyPeaks(5,i);
-            FrequencyPeaksHeightFiltered(6,counter) = FrequencyPeaks(6,i);
+        if((frequencyPeaks(5,i) >= minimumPeakHeightGlobal || ...
+                frequencyPeaks(5,i) >= minimumPeakHeightLocalThreshold) ...
+                && (frequencyPeaks(4,i) > minimumPeakHeightApprox))
+            frequencyPeaksHeightFiltered(1,counter) = frequencyPeaks(1,i);
+            frequencyPeaksHeightFiltered(2,counter) = frequencyPeaks(2,i);
+            frequencyPeaksHeightFiltered(3,counter) = frequencyPeaks(3,i);
+            frequencyPeaksHeightFiltered(4,counter) = frequencyPeaks(4,i);
+            frequencyPeaksHeightFiltered(5,counter) = frequencyPeaks(5,i);
+            frequencyPeaksHeightFiltered(6,counter) = frequencyPeaks(6,i);
             counter = counter+1;
         end
     end
     
     % Filtering peaks out of the audible frequency range
-    FrequencyPeaksRangeFiltered = [];
+    frequencyPeaksRangeFiltered = [];
     counter = 1;
-    for i=1:size(FrequencyPeaksHeightFiltered,2)
-        if(frequency(FrequencyPeaksHeightFiltered(2,i)) >= FrequencyRangeLow && frequency(FrequencyPeaksHeightFiltered(2,i)) <= FrequencyRangeHigh)
-            FrequencyPeaksRangeFiltered(1,counter) = FrequencyPeaksHeightFiltered(1,i);
-            FrequencyPeaksRangeFiltered(2,counter) = FrequencyPeaksHeightFiltered(2,i);
-            FrequencyPeaksRangeFiltered(3,counter) = FrequencyPeaksHeightFiltered(3,i);
-            FrequencyPeaksRangeFiltered(4,counter) = FrequencyPeaksHeightFiltered(4,i);
-            FrequencyPeaksRangeFiltered(5,counter) = FrequencyPeaksHeightFiltered(5,i);
-            FrequencyPeaksRangeFiltered(6,counter) = FrequencyPeaksHeightFiltered(6,i);
+    for i=1:size(frequencyPeaksHeightFiltered,2)
+        if(frequency(frequencyPeaksHeightFiltered(2,i)) >= frequencyRangeLow ...
+                && frequency(frequencyPeaksHeightFiltered(2,i)) <= frequencyRangeHigh)
+            frequencyPeaksRangeFiltered(1,counter) = frequencyPeaksHeightFiltered(1,i);
+            frequencyPeaksRangeFiltered(2,counter) = frequencyPeaksHeightFiltered(2,i);
+            frequencyPeaksRangeFiltered(3,counter) = frequencyPeaksHeightFiltered(3,i);
+            frequencyPeaksRangeFiltered(4,counter) = frequencyPeaksHeightFiltered(4,i);
+            frequencyPeaksRangeFiltered(5,counter) = frequencyPeaksHeightFiltered(5,i);
+            frequencyPeaksRangeFiltered(6,counter) = frequencyPeaksHeightFiltered(6,i);
             counter = counter+1;
         end
     end
     
     % Discard peaks with very low magnitude in general-dB-range
-    FrequencyPeaksdBFiltered = [];
+    frequencyPeaksdBFiltered = [];
     counter = 1;
-    for i=1:size(FrequencyPeaksRangeFiltered,2)
-        if(FrequencyPeaksRangeFiltered(4,i) >= AmplitudeRangeLow)
-            FrequencyPeaksdBFiltered(1,counter) = FrequencyPeaksRangeFiltered(1,i);
-            FrequencyPeaksdBFiltered(2,counter) = FrequencyPeaksRangeFiltered(2,i);
-            FrequencyPeaksdBFiltered(3,counter) = FrequencyPeaksRangeFiltered(3,i);
-            FrequencyPeaksdBFiltered(4,counter) = FrequencyPeaksRangeFiltered(4,i);
-            FrequencyPeaksdBFiltered(5,counter) = FrequencyPeaksRangeFiltered(5,i);
-            FrequencyPeaksdBFiltered(6,counter) = FrequencyPeaksRangeFiltered(6,i);
+    for i=1:size(frequencyPeaksRangeFiltered,2)
+        if(frequencyPeaksRangeFiltered(4,i) >= amplitudeRangeLow)
+            frequencyPeaksdBFiltered(1,counter) = frequencyPeaksRangeFiltered(1,i);
+            frequencyPeaksdBFiltered(2,counter) = frequencyPeaksRangeFiltered(2,i);
+            frequencyPeaksdBFiltered(3,counter) = frequencyPeaksRangeFiltered(3,i);
+            frequencyPeaksdBFiltered(4,counter) = frequencyPeaksRangeFiltered(4,i);
+            frequencyPeaksdBFiltered(5,counter) = frequencyPeaksRangeFiltered(5,i);
+            frequencyPeaksdBFiltered(6,counter) = frequencyPeaksRangeFiltered(6,i);
             counter = counter+1;
         end
     end

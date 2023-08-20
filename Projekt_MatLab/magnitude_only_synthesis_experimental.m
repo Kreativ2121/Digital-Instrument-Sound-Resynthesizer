@@ -8,8 +8,8 @@ xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
 % filetitle = "src/generated/mono/square2000.wav";
 % filetitle = "src/generated/mono/square440.wav";
 % filetitle = "src/generated/mono/square689.wav";
-filetitle = "src/generated/mono/square2411.wav";
-% filetitle = "src/generated/mono/sine440.wav";
+% filetitle = "src/generated/mono/square2411.wav";
+filetitle = "src/generated/mono/sine440.wav";
 % filetitle = "src/generated/mono/sine689.wav";
 %filetitle = "src/generated/mono/saw689.wav";
 % filetitle = "src/generated/mono/chirp440_2000.wav";
@@ -68,10 +68,10 @@ PointAmplitude = deg2rad(magnitude);
 % W dalszym etapie zmienne te póki co nie są używane
 
 %% STEP 3 - CHANGING MAGNITUDE SCALE TO DECIBELS
-MagnitudeDecibels = 20*log10(Ray);MagnitudeDecibels = 20*log10(Ray);
+MagnitudeDecibels = 20*log10(Ray);
 
 %% STEP 4 - FINDING PROMINENT SPECTRAL PEAKS
-MinimumPeakHeightApprox = 20; %in dB
+MinimumPeakHeightApprox = 10; %in dB
 MinimumPeakHeightGlobal = -40; %in dB
 MinimumPeakHeightLocal = -30; %in dB
 FrequencyRangeLow = 20; %in hz

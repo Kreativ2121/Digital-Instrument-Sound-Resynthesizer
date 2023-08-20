@@ -1,0 +1,24 @@
+function plot_wavelet_and_stft(audioData, fs, fftlength, windowlength, overlaplength, beta)
+%plot_wavelet_and_stf Function that makes a plot of a few hundred first input audio
+%values and makes a STFT plot with given variables.
+
+    %% Plot wavelet
+    xLimitation = [duration(0,0,0,0) duration(0,0,0,100)];
+    
+    f1 = figure('Name','STFT','NumberTitle','off');
+    subplot(2,1,1)
+    t = seconds(0:1/fs:(size(audioData,1)-1)/fs);
+    f1.Position(1:2) = [50 850];
+    plot(t,audioData)
+    title("Wavelet")
+    xlabel("Time")
+    ylabel("Amplitude")
+    legend("Channel 1", "Channel 2")
+    xlim(xLimitation)
+    ylim([-1 1])
+    
+    %% Plot STFT
+    subplot(2,1,2)
+    stft(audioData, fs, Window=kaiser(windowlength,beta), FFTLength=fftlength, OverlapLength=overlaplength, FrequencyRange="onesided")
+end
+

@@ -21,21 +21,21 @@ amplitudeRangeHigh = 0; %in dB
 MaximumPeakDeviation = 30; %Większa granica -> mniej trajektorii
 
 %% Read Wave File
-% filetitle = "../src/generated/mono/square2000.wav";
-% filetitle = "../src/generated/mono/square440.wav";
-% filetitle = "../src/generated/mono/square689.wav";
-% filetitle = "../src/generated/mono/square2411.wav";
-% filetitle = "../src/generated/mono/sine440.wav";
-% filetitle = "../src/generated/mono/sine689.wav";
-% filetitle = "../src/generated/mono/saw689.wav";
-% filetitle = "../src/generated/mono/chirp440_2000.wav";
-% filetitle = "../src/generated/mono/chirp2000_8000.wav";
-filetitle = "../src/generated/mono/chirp2000_6000.wav";
-% filetitle = "../src/generated/mono/chirp2000_14000.wav";
-% filetitle = "../src/generated/mono/chirp14000_2000.wav";
-% filetitle = "../src/generated/mono/sine2000.wav";
-% filetitle = "../src/generated/mono/square2000_additivesynthesis.wav";
-% filetitle = "../src/download/CantinaBand3.wav";
+% filetitle = "../../src/generated/mono/square2000.wav";
+% filetitle = "../../src/generated/mono/square440.wav";
+% filetitle = "../../src/generated/mono/square689.wav";
+% filetitle = "../../src/generated/mono/square2411.wav";
+% filetitle = "../../src/generated/mono/sine440.wav";
+% filetitle = "../../src/generated/mono/sine689.wav";
+% filetitle = "../../src/generated/mono/saw689.wav";
+% filetitle = "../../src/generated/mono/chirp440_2000.wav";
+% filetitle = "../../src/generated/mono/chirp2000_8000.wav";
+filetitle = "../../src/generated/mono/chirp2000_6000.wav";
+% filetitle = "../../src/generated/mono/chirp2000_14000.wav";
+% filetitle = "../../src/generated/mono/chirp14000_2000.wav";
+% filetitle = "../../src/generated/mono/sine2000.wav";
+% filetitle = "../../src/generated/mono/square2000_additivesynthesis.wav";
+% filetitle = "../../src/download/CantinaBand3.wav";
 
 %% STEP 1
 [audioData, fs] = audioread(filetitle);

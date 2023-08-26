@@ -91,11 +91,12 @@ function [output] = step4_resynthesize(trajectories, fs, hopsize, audioDataLengt
             end
     
             % ampSumHist = [ampSumHist,ampSum];
+            if(stepcounter >= 100 && ampSumPrev<ampSum && abs(ampSum)<0.01)
             % if(stepcounter >= 10000 && ampSumPrev<ampSum && abs(ampSum)<0.005)
             % if(ampSumHist(end)<ampSum && abs(ampSum)<0.01)
             % if(ampSumPrev<ampSum && ampSumPrevPrev<ampSumPrev && abs(ampSum)<0.01)
-            if(ampSumPrev<ampSum && ampSumPrevPrev<ampSumPrev && ...
-                    abs(ampSum)<0.01 && stepcounter>= 100)
+            % if(ampSumPrev<ampSum && ampSumPrevPrev<ampSumPrev && ...
+                    % abs(ampSum)<0.01 && stepcounter>= 100)
                 jumpMem = [jumpMem,stepcounter];
                 stepcounter = 1;
                 continue;

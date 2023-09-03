@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration file="C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\App\Resynthesizer.prj" location="C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\App" name="Resynthesizer" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration file="C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\MatLab_App\Resynthesizer.prj" location="C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\MatLab_App" name="Resynthesizer" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>Resynthesizer</param.appname>
     <param.icon>${PROJECT_ROOT}\Resynthesizer_resources\icon.ico</param.icon>
     <param.icons>
@@ -14,7 +14,7 @@
     <param.company />
     <param.summary>Showcase app for master thesis resynthesizer application.</param.summary>
     <param.description />
-    <param.screenshot>C:\Users\domin\Desktop\logo o 3 rano.png</param.screenshot>
+    <param.screenshot>C:\Users\domin\Desktop\logo o 3 rano_smol.png</param.screenshot>
     <param.guid />
     <param.installpath.string>\Resynthesizer\</param.installpath.string>
     <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
@@ -32,7 +32,7 @@
     <param.web.mcr>true</param.web.mcr>
     <param.package.mcr>false</param.package.mcr>
     <param.no.mcr>false</param.no.mcr>
-    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.web.mcr.name>resynthesizer_app</param.web.mcr.name>
     <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
     <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
     <param.windows.command.prompt>true</param.windows.command.prompt>
@@ -68,7 +68,6 @@
       <param.web.mcr />
       <param.package.mcr />
       <param.no.mcr />
-      <param.web.mcr.name />
       <param.package.mcr.name />
       <param.no.mcr.name />
       <param.windows.command.prompt />
@@ -92,9 +91,9 @@
       <file>${PROJECT_ROOT}\step4_resynthesize.m</file>
     </fileset.depfun>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\Resynthesizer\for_testing" name="splash.png" optional="false">C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\App\Resynthesizer\for_testing\splash.png</file>
-      <file location="${PROJECT_ROOT}\Resynthesizer\for_testing" name="readme.txt" optional="true">C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\App\Resynthesizer\for_testing\readme.txt</file>
-      <file location="${PROJECT_ROOT}\Resynthesizer\for_testing" name="Resynthesizer.exe" optional="false">C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\App\Resynthesizer\for_testing\Resynthesizer.exe</file>
+      <file location="${PROJECT_ROOT}\Resynthesizer\for_testing" name="splash.png" optional="false">C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\MatLab_App\Resynthesizer\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\Resynthesizer\for_testing" name="Resynthesizer.exe" optional="false">C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\MatLab_App\Resynthesizer\for_testing\Resynthesizer.exe</file>
+      <file location="${PROJECT_ROOT}\Resynthesizer\for_testing" name="readme.txt" optional="true">C:\Users\domin\Desktop\master_thesis\Projekt_MatLab\project\MatLab_App\Resynthesizer\for_testing\readme.txt</file>
     </build-deliverables>
     <workflow />
     <matlab>

@@ -30,8 +30,8 @@ MaximumPeakDeviation = 30; %Większa granica -> mniej trajektorii
 % filetitle = "../../src/generated/mono/saw689.wav";
 % filetitle = "../../src/generated/mono/chirp440_2000.wav";
 % filetitle = "../../src/generated/mono/chirp2000_8000.wav";
-filetitle = "../../src/generated/mono/chirp2000_6000.wav";
-% filetitle = "../../src/generated/mono/chirp2000_14000.wav";
+% filetitle = "../../src/generated/mono/chirp2000_6000.wav";
+filetitle = "../../src/generated/mono/chirp2000_14000.wav";
 % filetitle = "../../src/generated/mono/chirp14000_2000.wav";
 % filetitle = "../../src/generated/mono/sine2000.wav";
 % filetitle = "../../src/generated/mono/square2000_additivesynthesis.wav";
@@ -55,11 +55,11 @@ magnitudeDecibels = 20*log10(abs(magnitude));
     frequencyRangeLow, frequencyRangeHigh);
 
 % Creating equal loudness curve
-fletcher_and_mundson_40dB = fletcher_and_mundson_40dB_curve_generator(frequency);
+fletcher_and_munson_40dB = fletcher_and_munson_40dB_curve_generator(frequency);
 
 %% STEP 2
-peaks = step2_peak_detection_and_interpolation(frequencyPeaksFiltered, ...
-    magnitudeDecibels, frequency, fletcher_and_mundson_40dB);
+peaks = step2_interpolation(frequencyPeaksFiltered, ...
+    magnitudeDecibels, frequency, fletcher_and_munson_40dB);
 peaks = normalize_amplitudes(peaks, windowLength, beta);
 
 %% STEP 3

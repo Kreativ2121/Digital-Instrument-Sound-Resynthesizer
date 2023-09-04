@@ -9,13 +9,11 @@ overlapLength = floor(0.75 * windowLength);
 hopsize = fftLength - overlapLength;
 beta = 6.0;
 
-minimumPeakHeightApprox = 10; %in dB
 minimumPeakHeightGlobal = -40; %in dB
 minimumPeakHeightLocal = -30; %in dB
 frequencyRangeLow = 20; %in hz
 frequencyRangeHigh = 16000; %in hz
-amplitudeRangeLow = -70; %in dB
-amplitudeRangeHigh = 0; %in dB
+amplitudeRangeLow = 10; %in dB 
 
 % MaximumPeakDeviation = 500;
 MaximumPeakDeviation = 30; %Większa granica -> mniej trajektorii
@@ -50,8 +48,8 @@ plot_wavelet_and_stft(audioData, fs, fftLength, windowLength, ...
 magnitudeDecibels = 20*log10(abs(magnitude));
 
 [frequencyPeaks, frequencyPeaksFiltered] = step1_find_and_filter_prominent_spectral_peaks( ...
-    magnitudeDecibels, frequency, minimumPeakHeightApprox, ...
-    minimumPeakHeightLocal, minimumPeakHeightGlobal, amplitudeRangeLow, ...
+    magnitudeDecibels, frequency, minimumPeakHeightLocal, ...
+    minimumPeakHeightGlobal, amplitudeRangeLow, ...
     frequencyRangeLow, frequencyRangeHigh);
 
 % Creating equal loudness curve

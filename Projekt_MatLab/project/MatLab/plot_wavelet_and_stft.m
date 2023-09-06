@@ -10,7 +10,7 @@ function plot_wavelet_and_stft(audioData, fs, fftLength, windowLength, overlapLe
     t = seconds(0:1/fs:(size(audioData,1)-1)/fs);
     f1.Position(1:2) = [50 850];
     plot(t,audioData)
-    title("Wavelet")
+    title("Waveform")
     xlabel("Time")
     ylabel("Amplitude")
     legend("Channel 1", "Channel 2")

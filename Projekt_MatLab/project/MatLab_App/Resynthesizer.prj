@@ -8,15 +8,15 @@
       <file>${PROJECT_ROOT}\Resynthesizer_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\Resynthesizer_resources\icon_16.png</file>
     </param.icons>
-    <param.version>0.2</param.version>
+    <param.version>1.0</param.version>
     <param.authnamewatermark>Dominik Ciesiołkiewicz</param.authnamewatermark>
-    <param.email />
-    <param.company />
-    <param.summary>Showcase app for master thesis resynthesizer application.</param.summary>
+    <param.email>dominikciesiolkiewicz@gmail.com</param.email>
+    <param.company>West Pomeranian University of Technology</param.company>
+    <param.summary>Showcase app for resynthesizer application.</param.summary>
     <param.description />
     <param.screenshot>C:\Users\domin\Desktop\logo o 3 rano_smol.png</param.screenshot>
     <param.guid />
-    <param.installpath.string>\Resynthesizer\</param.installpath.string>
+    <param.installpath.string>\West Pomeranian University of Technology\Resynthesizer\</param.installpath.string>
     <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
     <param.logo />
     <param.install.notes />
@@ -32,7 +32,7 @@
     <param.web.mcr>true</param.web.mcr>
     <param.package.mcr>false</param.package.mcr>
     <param.no.mcr>false</param.no.mcr>
-    <param.web.mcr.name>resynthesizer_app</param.web.mcr.name>
+    <param.web.mcr.name>Resynthesizer</param.web.mcr.name>
     <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
     <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
     <param.windows.command.prompt>true</param.windows.command.prompt>
@@ -48,8 +48,7 @@
 	 -?  print help on how to use the application 
 	 input arguments</param.help.text>
     <unset>
-      <param.email />
-      <param.company />
+      <param.version />
       <param.description />
       <param.guid />
       <param.installpath.string />
@@ -86,7 +85,7 @@
       <file>${PROJECT_ROOT}\fletcher_and_mundson_40dB_curve_generator.m</file>
       <file>${PROJECT_ROOT}\normalize_amplitudes.m</file>
       <file>${PROJECT_ROOT}\step1_find_and_filter_prominent_spectral_peaks.m</file>
-      <file>${PROJECT_ROOT}\step2_peak_detection_and_interpolation.m</file>
+      <file>${PROJECT_ROOT}\step2_interpolation.m</file>
       <file>${PROJECT_ROOT}\step3_assign_peak_frequency_trajectories.m</file>
       <file>${PROJECT_ROOT}\step4_resynthesize.m</file>
     </fileset.depfun>

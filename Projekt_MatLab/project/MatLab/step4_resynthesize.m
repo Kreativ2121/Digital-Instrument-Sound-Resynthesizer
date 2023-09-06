@@ -37,53 +37,33 @@ function [output] = step4_resynthesize(trajectories, fs, hopsize, audioDataLengt
     
             %%Iterate over peaks
             for peak=1:nonZeroTrajectories
-    
-                % If trajectory is dying
-                if(isnan(trajectories(((tra-1)*4)+3,peak)) && ~isnan(trajectories(((tra-2)*4)+3,peak)))
+
+                % If trajectory is new (was non-existant in previous time frame)
+                if((trajectories(((tra-2)*4)+3,peak)) == 0)
+                    ampInst = 0 + (trajectories(((tra-1)*4)+3,peak))/synframesamount*(synframe-1);
+                    freqInst = trajectories(((tra-1)*4)+4,peak);
+                    ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
+                    continue;
+                % If trajectory died or is not born yet
+                elseif(isnan(trajectories(((tra-1)*4)+3,peak)) || trajectories(((tra-1)*4)+3,peak)==0)
+                    continue;
+                % Traditional trajectory - not being born nor dying
+                elseif(tra~=size(trajectories,1)/4)
+                    ampInst = trajectories(((tra-2)*4)+3,peak) ...
+                        +(trajectories(((tra-1)*4)+3,peak) ...
+                        -trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
+                    freqInst = trajectories(((tra-2)*4)+4,peak)...
+                        +(trajectories(((tra-1)*4)+4,peak)...
+                        -trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
+                    ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
+                    continue;
+                else
+                    % Last time frame
                     ampInst = trajectories(((tra-2)*4)+3,peak) + (0 ...
                         -trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
                     freqInst = trajectories(((tra-2)*4)+4,peak);
                     ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
                     continue;
-    
-                % If trajectory died in previous time frame
-                elseif(isnan(trajectories(((tra-1)*4)+3,peak)) || trajectories(((tra-1)*4)+3,peak)==0)
-                    continue;
-    
-                % If trajectory is new (was non-existant in previous time frame)
-                elseif((trajectories(((tra-2)*4)+3,peak)) == 0)
-                    ampInst = 0 + (trajectories(((tra-1)*4)+3,peak))/synframesamount*(synframe-1);
-                    freqInst = trajectories(((tra-1)*4)+4,peak);
-                    ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
-    
-                elseif(tra~=size(trajectories,1)/4)
-                    if(isnan(trajectories(((tra)*4)+3,peak)))
-                        % Dying trajectory
-                        ampInst = trajectories(((tra-2)*4)+3,peak) ...
-                            +(trajectories(((tra-1)*4)+3,peak) ...
-                            -trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
-                        freqInst = trajectories(((tra-2)*4)+4,peak) ...
-                            +(trajectories(((tra-1)*4)+4,peak) ...
-                            -trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
-                        ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
-                    else
-                        % Traditional trajectory - not being born nor dying
-                        ampInst = trajectories(((tra-2)*4)+3,peak) ...
-                            +(trajectories(((tra-1)*4)+3,peak) ...
-                            -trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
-                        % freqInst = trajectories(((tra-2)*4)+4,peak);
-                        freqInst = trajectories(((tra-2)*4)+4,peak) + ...
-                            (trajectories(((tra-1)*4)+4,peak)...
-                            -trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
-                        ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
-                    end
-                else
-                    % Traditional trajectory - not being born nor dying, at the end of all time frames
-                    ampInst = trajectories(((tra-2)*4)+3,peak) + ...
-                        (trajectories(((tra-1)*4)+3,peak) - ...
-                        trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
-                    freqInst = trajectories(((tra-2)*4)+4,peak);
-                    ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
                 end
             end
     

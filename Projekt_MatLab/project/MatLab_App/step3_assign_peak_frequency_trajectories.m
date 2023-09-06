@@ -15,7 +15,6 @@ function [trajectories] = step3_assign_peak_frequency_trajectories(peaks, maximu
     peaksMod(4,:) = peaks(12,:);
     peaksMod(5,:) = 0; % 0-unmatched 1-matched
     
-    % LowestNonNan = 1;
     trajectories = [];
     firstPeaksLoc = find(peaksMod(2,:) == 1);
     counter = 1;
@@ -50,7 +49,6 @@ function [trajectories] = step3_assign_peak_frequency_trajectories(peaks, maximu
         newPeaks = [];
         counter_in = 1;
     
-        % FAILSAFE WHEN THERE ARE NO trajectories IN A SINGLE FRAME
         if(isempty(peaksLoc))
             newPeaks(1, counter_in) = NaN;
             newPeaks(2, counter_in) = NaN;

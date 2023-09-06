@@ -24,10 +24,7 @@ function [output] = step4_resynthesize(trajectories, fs, hopsize, audioDataLengt
     
     %Iterate over time frames
     jumpMem = [];
-    
     ampSumPrev = NaN;
-    ampSumPrevPrev = NaN;
-    
     for tra = 2:size(trajectories,1)/4
         nonZeroTrajectories = numel(nonzeros(trajectories(tra*4-3,:)));
     
@@ -40,76 +37,48 @@ function [output] = step4_resynthesize(trajectories, fs, hopsize, audioDataLengt
     
             %%Iterate over peaks
             for peak=1:nonZeroTrajectories
-    
-                % Jeżeli ta trajektoria właśnie umarła
-                if(isnan(trajectories(((tra-1)*4)+3,peak)) && ~isnan(trajectories(((tra-2)*4)+3,peak)))
+
+                % If trajectory is new (was non-existant in previous time frame)
+                if((trajectories(((tra-2)*4)+3,peak)) == 0)
+                    ampInst = 0 + (trajectories(((tra-1)*4)+3,peak))/synframesamount*(synframe-1);
+                    freqInst = trajectories(((tra-1)*4)+4,peak);
+                    ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
+                    continue;
+                % If trajectory died or is not born yet
+                elseif(isnan(trajectories(((tra-1)*4)+3,peak)) || trajectories(((tra-1)*4)+3,peak)==0)
+                    continue;
+                % Traditional trajectory - not being born nor dying
+                elseif(tra~=size(trajectories,1)/4)
+                    ampInst = trajectories(((tra-2)*4)+3,peak) ...
+                        +(trajectories(((tra-1)*4)+3,peak) ...
+                        -trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
+                    freqInst = trajectories(((tra-2)*4)+4,peak)...
+                        +(trajectories(((tra-1)*4)+4,peak)...
+                        -trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
+                    ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
+                    continue;
+                else
+                    % Last time frame
                     ampInst = trajectories(((tra-2)*4)+3,peak) + (0 ...
                         -trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
                     freqInst = trajectories(((tra-2)*4)+4,peak);
                     ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
                     continue;
-    
-                %Measure the instantaneous amplitude
-                % Jeżeli nie istnieje już taka trajektoria, ale nie umarła w poprzednim framie.
-                elseif(isnan(trajectories(((tra-1)*4)+3,peak)) || trajectories(((tra-1)*4)+3,peak)==0)
-                    continue;
-    
-                % Jeżeli trajektoria jest nowa (nie istniała w poprzedniej próbce czasowej)
-                elseif((trajectories(((tra-2)*4)+3,peak)) == 0)
-                    ampInst = 0 + (trajectories(((tra-1)*4)+3,peak))/synframesamount*(synframe-1);
-                    freqInst = trajectories(((tra-1)*4)+4,peak);
-                    ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
-    
-                elseif(tra~=size(trajectories,1)/4)
-                    if(isnan(trajectories(((tra)*4)+3,peak)))
-                        % Tu wpisujemy dane trajektorii umierającej, ale jeszcze przed jej zgonem
-                        ampInst = trajectories(((tra-2)*4)+3,peak) ...
-                            +(trajectories(((tra-1)*4)+3,peak) ...
-                            -trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
-                        freqInst = trajectories(((tra-2)*4)+4,peak) ...
-                            +(trajectories(((tra-1)*4)+4,peak) ...
-                            -trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
-                        ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
-                    else
-                        % Zwykła trajektoria - nie rodząca się i nie umierająca
-                        ampInst = trajectories(((tra-2)*4)+3,peak) ...
-                            +(trajectories(((tra-1)*4)+3,peak) ...
-                            -trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
-                        freqInst = trajectories(((tra-2)*4)+4,peak) + ...
-                            (trajectories(((tra-1)*4)+4,peak)...
-                            -trajectories(((tra-2)*4)+4,peak))/synframesamount*(synframe-1);
-                        ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
-                    end
-                else
-                    % Zwykła trajektoria - nie rodząca się i nie umierająca - na końcu wszystkich time frame'ów
-                    ampInst = trajectories(((tra-2)*4)+3,peak) + ...
-                        (trajectories(((tra-1)*4)+3,peak) - ...
-                        trajectories(((tra-2)*4)+3,peak))/synframesamount*(synframe-1);
-                    freqInst = trajectories(((tra-2)*4)+4,peak);
-                    ampSum = ampSum + ampInst*sin((2*pi*freqInst*stepcounter)/fs);
                 end
             end
     
-            % ampSumHist = [ampSumHist,ampSum];
             if(stepcounter >= 100 && ampSumPrev<ampSum && abs(ampSum)<0.01)
-            % if(stepcounter >= 10000 && ampSumPrev<ampSum && abs(ampSum)<0.005)
-            % if(ampSumHist(end)<ampSum && abs(ampSum)<0.01)
-            % if(ampSumPrev<ampSum && ampSumPrevPrev<ampSumPrev && abs(ampSum)<0.01)
-            % if(ampSumPrev<ampSum && ampSumPrevPrev<ampSumPrev && ...
-                    % abs(ampSum)<0.01 && stepcounter>= 100)
                 jumpMem = [jumpMem,stepcounter];
                 stepcounter = 1;
                 continue;
             end
     
-            ampSumPrevPrev = ampSumPrev;
             ampSumPrev = ampSum;
             output(sum(jumpMem)+stepcounter) = ampSum;
             stepcounter = stepcounter + 1;
         end
     end
     output = output';
-    % output = output./3;
     
     % FAILSAFE
     for i=1:size(output)

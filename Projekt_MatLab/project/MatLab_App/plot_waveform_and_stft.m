@@ -1,4 +1,4 @@
-function plot_wavelet_and_stft(audioData, fs, fftLength, windowLength, overlapLength, beta)
+function plot_waveform_and_stft(audioData, fs, fftLength, windowLength, overlapLength, beta)
 %plot_wavelet_and_stf Function that makes a plot of a few hundred first input audio
 %values and makes a STFT plot with given variables.
 

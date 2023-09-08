@@ -16,7 +16,8 @@ function [frequencyPeaks, frequencyPeaksFiltered] = ...
         % Loop on frequency bins
         for i=2:size(magnitudeDecibels,1)-1
             if(magnitudeDecibels(i,j) >= magnitudeDecibels(i-1,j) && ...
-                    magnitudeDecibels(i,j) >= magnitudeDecibels(i+1,j))
+                    magnitudeDecibels(i,j) >= magnitudeDecibels(i+1,j) && ...
+                    ~isinf(magnitudeDecibels(i,j)))
                 frequencyPeaks(1,counter) = magnitudeDecibels(i,j);
                 frequencyPeaks(2,counter) = i; % No. of bin
                 frequencyPeaks(3,counter) = j; % No. of time frame

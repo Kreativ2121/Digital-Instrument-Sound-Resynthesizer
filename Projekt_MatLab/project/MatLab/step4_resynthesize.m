@@ -86,6 +86,8 @@ function [output] = step4_resynthesize(trajectories, fs, hopsize, audioDataLengt
            output(i) = 1.00;
         elseif(output(i)<-1)
             output(i) = -1.00;
+        elseif(isnan(output(i)))
+            output(i) = 0;
         end
     end
 end

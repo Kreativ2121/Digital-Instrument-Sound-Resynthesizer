@@ -3,9 +3,8 @@ function [peaks] = normalize_amplitudes(peaks, windowLength, beta)
 % regard to the windowLength. This version works only for Keiser window.
     % Normalization scale factor calculation for Kaiser window
     W0_B = sum(kaiser(windowLength,beta));
-    alpha = double(((windowLength)/128+1)/W0_B);
-    
-    % Normalized amplitude
+    alpha = double(5.05/W0_B);
+
+    % Normalized amplitude              
     peaks(11,:) = peaks(11,:) * alpha;
 end
-

@@ -10,7 +10,7 @@ hopsize = fftLength - overlapLength;
 beta = 6.0;
 
 minimumPeakHeightGlobal = -40; %in dB
-minimumPeakHeightLocal = -30; %in dB
+minimumPeakHeightLocal = 0; %in dB
 frequencyRangeLow = 20; %in hz
 frequencyRangeHigh = 16000; %in hz
 amplitudeRangeLow = 10; %in dB 
@@ -32,8 +32,10 @@ MaximumPeakDeviation = 30; %Większa granica -> mniej trajektorii
 % filetitle = "../../src/generated/mono/chirp2000_14000.wav";
 % filetitle = "../../src/generated/mono/chirp14000_2000.wav";
 % filetitle = "../../src/generated/mono/sine2000.wav";
+% filetitle = "../../src/generated/mono/silence.wav";
 % filetitle = "../../src/generated/mono/square2000_additivesynthesis.wav";
 filetitle = "../../src/records/kross/mono/KGP_C.wav";
+% filetitle = "../../src/generated/mono/silence_then_sound.wav";
 % filetitle = "../../src/download/CantinaBand3.wav";
 
 %% STEP 1

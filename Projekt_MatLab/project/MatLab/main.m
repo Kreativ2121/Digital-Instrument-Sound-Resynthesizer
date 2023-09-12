@@ -7,7 +7,7 @@ fftLength = 512;
 windowLength = 512;
 overlapLength = floor(0.75 * windowLength);
 hopsize = fftLength - overlapLength;
-beta = 7.0;
+beta = 6.0;
 
 minimumPeakHeightGlobal = -30; %in dB
 minimumPeakHeightLocal = -15; %in dB
@@ -26,11 +26,11 @@ MaximumPeakDeviation = 30;
 % filetitle = "../../src/generated/mono/sine689.wav";
 % filetitle = "../../src/generated/mono/saw689.wav";
 % filetitle = "../../src/generated/mono/chirp440_2000.wav";
-filetitle = "../../src/generated/mono/chirp2000_8000.wav";
+% filetitle = "../../src/generated/mono/chirp2000_8000.wav";
 % filetitle = "../../src/generated/mono/chirp2000_6000.wav";
 % filetitle = "../../src/generated/mono/chirp2000_14000.wav";
 % filetitle = "../../src/generated/mono/chirp14000_2000.wav";
-% filetitle = "../../src/generated/mono/sine2000.wav";
+filetitle = "../../src/generated/mono/sine2000.wav";
 % filetitle = "../../src/generated/mono/silence.wav";
 % filetitle = "../../src/generated/mono/square2000_additivesynthesis.wav";
 % filetitle = "../../src/records/kross/mono/KGP_C.wav";
@@ -96,11 +96,3 @@ Trajectories = step3_assign_peak_frequency_trajectories(peaks, MaximumPeakDeviat
 %% STEP 4
 audioDataLength = length(audioData);
 output = step4_resynthesize(Trajectories, fs, hopsize, audioDataLength);
-
-subplot(3,1,3)
-plot(output)
-title("Resynthesized waveform (without volume correction)")
-xlim([0 200000])
-ylim([-1 1])
-xlabel("Time (samples)")
-ylabel("Amplitude")

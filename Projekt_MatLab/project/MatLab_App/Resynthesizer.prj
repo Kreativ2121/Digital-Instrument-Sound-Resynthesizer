@@ -82,10 +82,11 @@
     <fileset.resources />
     <fileset.package />
     <fileset.depfun>
-      <file>${PROJECT_ROOT}\fletcher_and_mundson_40dB_curve_generator.m</file>
+      <file>${PROJECT_ROOT}\fletcher_and_munson_40dB_curve_generator.m</file>
       <file>${PROJECT_ROOT}\normalize_amplitudes.m</file>
       <file>${PROJECT_ROOT}\step1_find_and_filter_prominent_spectral_peaks.m</file>
       <file>${PROJECT_ROOT}\step2_interpolation.m</file>
+      <file>${PROJECT_ROOT}\step2_interpolation_no_fm40.m</file>
       <file>${PROJECT_ROOT}\step3_assign_peak_frequency_trajectories.m</file>
       <file>${PROJECT_ROOT}\step4_resynthesize.m</file>
     </fileset.depfun>

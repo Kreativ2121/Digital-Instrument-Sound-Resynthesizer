@@ -1,4 +1,4 @@
-# Digital Instrument Sound Reconstruction
+# Digital Instrument Sound Resynthesizer
 
 <p align="center">
   <img src="Resynthesizer_Showcase_App/for_redistribution_files_only/splash.png?raw=true" alt="Digital Instrument Sound Resynthesizer Logo" width="30%" height="30%"/>

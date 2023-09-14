@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-# Digital Instrument Sound Resynthesizer
-
-<p align="center">
-  <img src="Resynthesizer_Showcase_App/for_redistribution_files_only/splash.png?raw=true" alt="Digital Instrument Sound Resynthesizer Logo" width="30%" height="30%"/>
-</p>
-The subject of the thesis was usage of one of the available sound synthesis methods to accurately reproduce the sound of a musical instrument, with emphasis on digital instruments like sound synthesizers.
-
-The chosen method and its principle of operation was precisely described. Situations in which the system showed it’s superiority over classical additive synthesis were presented.
-
-In the course of work, an app with graphical interface was made to ease testing phase and visualize the principle of algorithm’s operation. The app was written in Matlab version R2023a.
-=======
 # Digital Instrument Sound Resynthesizer
 
 <p align="center">
@@ -28,4 +16,6 @@ Projekt_MatLab/src folder conatins all audio files made for testing. You can fin
 Projekt_MatLab/project/MatLab folder contains all projekt files for MatLab environment. Feel free to explore all written functions. Be aware, that this version of tha app was made using MatLab R2023a and requires Signal Processing Toolbox.
 
 Projekt_MatLab/project/MatLab_App folder contains project files for the MatLab App that can be also installed from the previously decribed executables. It was created using MatLab App Designer.
->>>>>>> 361e246eb5142c8cbf89515dd0bf0029b3ccc6ff
+<p align="center">
+  <img src="Projekt_MatLab/project/MatLab_App/Resynthesizer_resources/interfejsapp_calc.png?raw=true" alt="Digital Instrument Sound Resynthesizer App visualization" width="90%" height="90%"/>
+</p>
